@@ -1,0 +1,108 @@
+@import "tailwindcss";
+@import "@fontsource-variable/onest";
+
+/* Modo oscuro por clase (.dark en <html>), con oscuro por defecto. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -----------------------------------------------------------------------------
+   Design tokens
+   Paleta "turno de trabajo": tinta azul-pizarra para pantallas que pasan
+   horas encendidas en mostrador, y un amarillo ají como único acento
+   (estado activo, foco, la cifra del día). Los semánticos solo para estados.
+   ----------------------------------------------------------------------------- */
+:root {
+  --bg: #f5f6f8;          /* fondo app */
+  --surface: #ffffff;     /* paneles */
+  --surface-2: #eef0f3;   /* filas hover, inputs */
+  --line: #dde1e7;        /* bordes */
+  --ink: #18202b;         /* texto principal */
+  --ink-2: #5a6574;       /* texto secundario */
+  --ink-3: #8a94a3;       /* texto terciario */
+  --accent: #c98a12;      /* ají amarillo (versión legible sobre claro) */
+  --accent-ink: #1b1405;  /* texto sobre acento */
+  --accent-soft: #fbefd6;
+  --ok: #2f8a5b;
+  --warn: #b7791f;
+  --danger: #c2413a;
+  --ring: #c98a12;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #121820;
+  --surface: #18202a;
+  --surface-2: #1f2934;
+  --line: #2a3542;
+  --ink: #e6eaf0;
+  --ink-2: #9aa6b5;
+  --ink-3: #6b7786;
+  --accent: #f0b23e;
+  --accent-ink: #1b1405;
+  --accent-soft: #3a2e17;
+  --ok: #4fbf86;
+  --warn: #e6a648;
+  --danger: #ef6b62;
+  --ring: #f0b23e;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  /* Radios con jerarquía: controles < paneles; el shell es plano. */
+  --radius-control: 0.5rem;
+  --radius-panel: 0.75rem;
+
+  /* Escala tipográfica (razón ~1.2) */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-figure: 2.25rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    font-feature-settings: "ss01";
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
