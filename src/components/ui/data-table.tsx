@@ -88,9 +88,19 @@ export function DataTable<T>({ columns, rows, rowKey, mobileRow, empty, caption 
 }
 
 /** Búsqueda por GET: funciona sin JS y deja la URL compartible. */
-export function TableSearch({ defaultValue, placeholder = "Buscar" }: { defaultValue?: string; placeholder?: string }) {
+export function TableSearch({
+  defaultValue,
+  placeholder = "Buscar",
+  keep,
+}: {
+  defaultValue?: string;
+  placeholder?: string;
+  /** Parámetros de la URL que deben conservarse al buscar (p. ej. un filtro activo). */
+  keep?: Record<string, string | undefined>;
+}) {
   return (
     <form role="search" className="relative w-full sm:max-w-xs">
+      {Object.entries(keep ?? {}).map(([k, v]) => v && <input key={k} type="hidden" name={k} value={v} />)}
       <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" />
       <input
         type="search"

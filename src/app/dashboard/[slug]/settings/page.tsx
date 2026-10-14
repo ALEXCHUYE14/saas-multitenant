@@ -3,6 +3,7 @@ import { getTenantContext } from "@/lib/tenant";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { OrgNameForm } from "./org-name-form";
+import { TicketSettingsForm } from "./ticket-form";
 import type { OrgPlan, OrgStatus } from "@/lib/supabase/database.types";
 
 export const metadata: Metadata = { title: "Ajustes" };
@@ -26,6 +27,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
 
       <div className="grid gap-6">
         <OrgNameForm initialName={organization.name} />
+        <TicketSettingsForm />
 
         <section className="rounded-panel border border-line bg-surface p-4 sm:p-6">
           <h2 className="font-semibold">Dirección del panel</h2>

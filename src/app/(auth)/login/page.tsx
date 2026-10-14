@@ -14,11 +14,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
       {error === "link" && (
         <p role="alert" className="mt-6 rounded-control bg-danger/10 px-3 py-2.5 text-sm text-danger">
-          El enlace de confirmación venció o ya se usó. Inicia sesión o regístrate otra vez.
+          El enlace venció o ya se usó. Inicia sesión o pide uno nuevo.
         </p>
       )}
 
       <LoginForm next={next} />
+
+      <p className="mt-4 text-sm">
+        <Link href="/forgot-password" className="text-ink-2 hover:text-ink">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
 
       <p className="mt-8 text-sm text-ink-2">
         ¿Aún no tienes cuenta?{" "}

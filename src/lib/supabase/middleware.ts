@@ -2,8 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
-const AUTH_ROUTES = ["/login", "/register"];
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding"];
+const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
+// /reset-password exige la sesión que crea el enlace de recuperación.
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/reset-password", "/print"];
 
 /**
  * Refresca la sesión de Supabase en cada request y aplica las reglas de acceso:

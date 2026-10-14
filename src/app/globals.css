@@ -25,6 +25,7 @@
   --warn: #b7791f;
   --danger: #c2413a;
   --ring: #c98a12;
+  --chart-bar: #b07510;   /* barras de reportes: validado vs --surface (dataviz) */
   color-scheme: light;
 }
 
@@ -43,6 +44,7 @@
   --warn: #e6a648;
   --danger: #ef6b62;
   --ring: #f0b23e;
+  --chart-bar: #b07d1c;
   color-scheme: dark;
 }
 
@@ -62,6 +64,7 @@
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
+  --color-chart-bar: var(--chart-bar);
 
   /* Radios con jerarquía: controles < paneles; el shell es plano. */
   --radius-control: 0.5rem;

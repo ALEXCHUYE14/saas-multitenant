@@ -139,7 +139,7 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
 }
 
 function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
-  const { fullName, email, role } = useTenant();
+  const { fullName, email, role, href } = useTenant();
   const initials = (fullName ?? email ?? "?")
     .split(/\s+/)
     .map((w) => w[0])
@@ -159,9 +159,14 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
         >
           <PanelLeftOpen className="size-4" />
         </button>
-        <span className="mt-1 grid size-8 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent" title={fullName ?? email ?? ""}>
+        <Link
+          href={href("/profile")}
+          className="mt-1 grid size-8 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent hover:brightness-105"
+          title="Mi perfil"
+          aria-label="Mi perfil"
+        >
           {initials}
-        </span>
+        </Link>
       </div>
     );
   }
@@ -169,14 +174,20 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
   return (
     <div className="grid gap-3 border-t border-line p-3">
       <ThemeToggle />
-      <div className="flex items-center gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
-          {initials}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm leading-tight font-medium">{fullName ?? email}</p>
-          <p className="text-xs leading-tight text-ink-3">{ROLE_LABEL[role]}</p>
-        </div>
+      <div className="flex items-center gap-1">
+        <Link
+          href={href("/profile")}
+          title="Mi perfil"
+          className="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-control p-1 hover:bg-surface-2"
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+            {initials}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm leading-tight font-medium">{fullName ?? email}</span>
+            <span className="block text-xs leading-tight text-ink-3">{ROLE_LABEL[role]}</span>
+          </span>
+        </Link>
         <form action={logout}>
           <button
             className="grid size-8 place-items-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"

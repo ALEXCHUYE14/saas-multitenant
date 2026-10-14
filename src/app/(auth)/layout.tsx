@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Ventas, clientes y equipo de tu negocio en un solo panel. Cada empresa ve solo sus propios datos.
           </p>
           <ul className="mt-8 grid gap-3 text-sm text-ink-2">
-            <li>Lavaderos, ópticas, bodegas y talleres</li>
+            <li>Restaurantes, bodegas, carwash y carnicerías</li>
             <li>Funciona desde el celular del mostrador</li>
             <li>Roles para propietario, administración y personal</li>
           </ul>

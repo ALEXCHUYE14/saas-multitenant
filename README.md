@@ -12,7 +12,20 @@ npx supabase db push               # o: supabase/migrations/20261013000000_multi
 npm run dev
 ```
 
-En Supabase → Authentication → URL Configuration agrega `http://localhost:3000/auth/callback` (y tu dominio de producción) a Redirect URLs.
+En Supabase → Authentication → URL Configuration agrega `http://localhost:3000/**` (y tu dominio de producción con `/**`) a Redirect URLs.
+
+### Migraciones (en este orden, cada una por separado en el SQL Editor)
+
+| # | Archivo | Módulo |
+|---|---|---|
+| 1 | `20261013000000_multitenant_core.sql` | Negocios, perfiles, roles, invitaciones, clientes |
+| 2 | `20261014000000_products_inventory.sql` | Productos y kardex de stock |
+| 3 | `20261015000000_sales_cash.sql` | Ventas y caja |
+| 4 | `20261016000000_ticket_settings.sql` | Datos del ticket (RUC, dirección…) |
+| 5 | `20261017000000_credit_enum.sql` | Fiados 1/2 — **ejecutar sola** (agrega un valor de enum) |
+| 6 | `20261017000100_credit.sql` | Fiados 2/2: abonos, saldos y costo por venta |
+| 7 | `20261018000000_tables_orders.sql` | Mesas y pedidos |
+| 8 | `20261019000000_reports.sql` | Reportes |
 
 ## Arquitectura
 

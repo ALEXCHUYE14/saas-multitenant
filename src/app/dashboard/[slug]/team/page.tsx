@@ -9,7 +9,7 @@ import { InviteForm, MemberControls, RevokeInvitation } from "./team-client";
 
 export const metadata: Metadata = { title: "Equipo" };
 
-const dateFmt = new Intl.DateTimeFormat("es-PE", { day: "numeric", month: "short" });
+const dateFmt = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day: "numeric", month: "short" });
 
 export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
