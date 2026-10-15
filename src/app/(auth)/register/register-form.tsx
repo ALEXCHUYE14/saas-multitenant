@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { register, type AuthState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -9,6 +10,11 @@ import { FormAlert } from "@/components/ui/form-alert";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(register, {});
+
+  // Conversión para Google Analytics (sin datos personales).
+  useEffect(() => {
+    if (state.notice) trackEvent("sign_up", { method: "email" });
+  }, [state.notice]);
 
   if (state.notice) {
     return (
