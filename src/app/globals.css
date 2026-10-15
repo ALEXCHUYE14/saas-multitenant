@@ -17,10 +17,11 @@
   --line: #dde1e7;        /* bordes */
   --ink: #18202b;         /* texto principal */
   --ink-2: #5a6574;       /* texto secundario */
-  --ink-3: #8a94a3;       /* texto terciario */
+  --ink-3: #667085;       /* texto terciario (≥ 4.5:1 sobre blanco y fondo) */
   --accent: #c98a12;      /* ají amarillo (versión legible sobre claro) */
   --accent-ink: #1b1405;  /* texto sobre acento */
   --accent-soft: #fbefd6;
+  --accent-text: #8f5f05; /* el acento como TEXTO: ≥ 4.8:1 (el ají puro no llega a 3:1) */
   --ok: #2f8a5b;
   --warn: #b7791f;
   --danger: #c2413a;
@@ -40,12 +41,39 @@
   --accent: #f0b23e;
   --accent-ink: #1b1405;
   --accent-soft: #3a2e17;
+  --accent-text: #f0b23e;
   --ok: #4fbf86;
   --warn: #e6a648;
   --danger: #ef6b62;
   --ring: #f0b23e;
   --chart-bar: #b07d1c;
   color-scheme: dark;
+}
+
+/* Páginas públicas (inicio, login, registro…): SIEMPRE en claro, aunque el
+   usuario haya elegido oscuro para el panel. `:root:has(.theme-light)` aclara
+   también el documento (fondo, scroll, rebote en iPhone) y gana a `.dark` por
+   especificidad; `.theme-light` sola cubre navegadores sin :has(). Al navegar al
+   panel el contenedor desaparece y vuelve el tema elegido. */
+:root:has(.theme-light),
+.theme-light {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --line: #e2e6ec;
+  --ink: #141b26;
+  --ink-2: #4f5b6b;
+  --ink-3: #667085;
+  --accent: #c98a12;
+  --accent-ink: #1b1405;
+  --accent-soft: #fbefd6;
+  --accent-text: #8f5f05;
+  --ok: #2f8a5b;
+  --warn: #b7791f;
+  --danger: #c2413a;
+  --ring: #c98a12;
+  --chart-bar: #b07510;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -61,6 +89,7 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-danger: var(--danger);

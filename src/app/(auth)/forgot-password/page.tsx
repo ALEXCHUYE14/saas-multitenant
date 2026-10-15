@@ -12,9 +12,9 @@ export default function ForgotPasswordPage() {
 
       <ForgotPasswordForm />
 
-      <p className="mt-8 text-sm text-ink-2">
+      <p className="mt-7 text-center text-sm text-ink-2">
         ¿La recordaste?{" "}
-        <Link prefetch={false} href="/login" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
+        <Link prefetch={false} href="/login" className="font-medium text-accent-text hover:underline">
           Inicia sesión
         </Link>
       </p>

@@ -8,11 +8,13 @@ export type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   hint?: ReactNode;
   error?: string;
   prefix?: string;
+  /** Elemento al final del campo (p. ej. botón de mostrar contraseña). */
+  suffix?: ReactNode;
 };
 
 /** Input con label, ayuda y error accesibles (aria-describedby). */
 export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
-  { label, hint, error, prefix, className, id, ...props },
+  { label, hint, error, prefix, suffix, className, id, ...props },
   ref,
 ) {
   const autoId = useId();
@@ -44,6 +46,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
           )}
           {...props}
         />
+        {suffix && <span className="flex shrink-0 items-center pr-1">{suffix}</span>}
       </div>
       {hint && !error && (
         <p id={hintId} className="text-xs text-ink-3">

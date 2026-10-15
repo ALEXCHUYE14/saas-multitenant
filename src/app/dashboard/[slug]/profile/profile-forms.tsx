@@ -5,6 +5,7 @@ import { changePassword, updateProfileName, type PasswordState, type ProfileName
 import { useTenant } from "@/hooks/use-tenant";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { PasswordField } from "@/components/ui/password-field";
 import { FormAlert } from "@/components/ui/form-alert";
 
 export function ProfileNameForm({ initialName }: { initialName: string }) {
@@ -45,28 +46,25 @@ export function PasswordForm() {
       <h2 className="font-semibold">Contraseña</h2>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <FormAlert error={state.error} notice={state.saved ? "Contraseña actualizada." : undefined} />
-        <Field
+        <PasswordField
           label="Contraseña actual"
           name="current_password"
-          type="password"
           autoComplete="current-password"
           required
           className="sm:col-span-2"
           error={state.fieldErrors?.current_password}
         />
-        <Field
+        <PasswordField
           label="Nueva contraseña"
           name="password"
-          type="password"
           autoComplete="new-password"
           required
           hint="Al menos 8 caracteres, con letras y números."
           error={state.fieldErrors?.password}
         />
-        <Field
+        <PasswordField
           label="Repite la nueva contraseña"
           name="password_confirm"
-          type="password"
           autoComplete="new-password"
           required
           error={state.fieldErrors?.password_confirm}

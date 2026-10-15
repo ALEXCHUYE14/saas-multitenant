@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { register, type AuthState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { PasswordField } from "@/components/ui/password-field";
 import { FormAlert } from "@/components/ui/form-alert";
 
 export function RegisterForm() {
@@ -18,7 +19,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form action={action} className="mt-8 grid gap-5" noValidate>
+    <form action={action} className="mt-7 grid gap-5" noValidate>
       <FormAlert error={state.error} />
       <Field
         label="Tu nombre"
@@ -34,14 +35,14 @@ export function RegisterForm() {
         type="email"
         inputMode="email"
         autoComplete="email"
+        placeholder="tu@correo.com"
         required
         defaultValue={state.values?.email}
         error={state.fieldErrors?.email}
       />
-      <Field
+      <PasswordField
         label="Contraseña"
         name="password"
-        type="password"
         autoComplete="new-password"
         required
         hint="Mínimo 8 caracteres, con letras y números."
@@ -57,7 +58,7 @@ export function RegisterForm() {
         error={state.fieldErrors?.business}
       />
       <Button type="submit" size="lg" loading={pending} className="mt-1 w-full">
-        Crear cuenta
+        Crear cuenta gratis
       </Button>
     </form>
   );
