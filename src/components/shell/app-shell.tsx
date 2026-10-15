@@ -11,6 +11,7 @@ import { logout } from "@/app/(auth)/actions";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NAV_ITEMS } from "./nav";
+import { IntentLink } from "@/components/intent-link";
 import { accessUntil, billingPhase, daysLeft } from "@/lib/billing";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -57,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar escritorio */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-line bg-surface transition-[width] duration-200 lg:flex",
           collapsed ? "w-[4.25rem]" : "w-60",
         )}
       >
@@ -95,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Aviso de cobro para el propietario: prueba por terminar (≤ 5 días), periodo de
+ * Aviso de cobro para el propietario: prueba por terminar (≤ 3 días), periodo de
  * gracia o acceso provisional. Se calcula tras montar (la hora del servidor y la
  * del navegador difieren: evita desajustes de hidratación).
  */
@@ -109,7 +110,7 @@ function BillingBanner() {
     const left = daysLeft(accessUntil(organization));
     const days = `${left} ${left === 1 ? "día" : "días"}`;
     setMsg(
-      phase === "trial" && left <= 5
+      phase === "trial" && left <= 3
         ? `Tu prueba gratis termina en ${days}. Suscríbete para no perder el acceso.`
         : phase === "grace"
           ? `Tu pago está pendiente. Te quedan ${days} antes de que se pause el acceso.`
@@ -156,7 +157,7 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
           const active = item.path === "" ? pathname === base : pathname.startsWith(to);
           return (
             <li key={item.path}>
-              <Link prefetch={false}
+              <IntentLink
                 href={to}
                 aria-current={active ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
@@ -169,7 +170,7 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
                 {active && <span aria-hidden className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-accent" />}
                 <item.icon className={cn("size-[1.1rem] shrink-0", active && "text-accent")} />
                 {!collapsed && <span className="truncate">{item.label}</span>}
-              </Link>
+              </IntentLink>
             </li>
           );
         })}
@@ -213,10 +214,12 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
   }
 
   return (
-    <div className="grid gap-3 border-t border-line p-3">
+    // grid-cols-[minmax(0,1fr)]: sin esto la columna de la grilla se ensancha hasta
+    // el texto más largo (un nombre completo) y el bloque se sale del panel.
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <ThemeToggle />
       {/* Fila del usuario: avatar + nombre (a Mi perfil) y salir, centrados en una misma altura. */}
-      <div className="flex h-12 items-center gap-2">
+      <div className="flex h-12 min-w-0 items-center gap-2">
         <Link prefetch={false}
           href={href("/profile")}
           title={`${fullName ?? email ?? ""} · Mi perfil`}
@@ -275,7 +278,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
         aria-label="Menú"
         inert={!open}
         className={cn(
-          "absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col border-r border-line bg-surface transition-transform duration-200",
+          "absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col overflow-hidden border-r border-line bg-surface transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >

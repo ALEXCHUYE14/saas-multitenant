@@ -60,7 +60,7 @@ export function ThemeToggle({ compact }: { compact?: boolean }) {
   }
 
   return (
-    <div role="radiogroup" aria-label="Tema" className="grid grid-cols-3 rounded-control bg-surface-2 p-0.5">
+    <div role="radiogroup" aria-label="Tema" className="grid w-full min-w-0 grid-cols-3 rounded-control bg-surface-2 p-0.5">
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}

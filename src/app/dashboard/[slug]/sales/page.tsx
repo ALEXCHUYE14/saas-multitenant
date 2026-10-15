@@ -20,8 +20,6 @@ type SP = Promise<{ page?: string; session?: string }>;
 export default async function SalesPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: SP }) {
   const { slug } = await params;
   const sp = await searchParams;
-  await getTenantContext(slug, { require: "sales:read" });
-
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
   const sessionId = sp.session && z.uuid().safeParse(sp.session).success ? sp.session : null;
 
@@ -33,7 +31,13 @@ export default async function SalesPage({ params, searchParams }: { params: Prom
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (sessionId) query = query.eq("cash_session_id", sessionId);
 
-  const [{ data, count, error }, team] = await Promise.all([query, supabase.from("profiles").select("id, full_name")]);
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [, { data, count, error }, team] = await Promise.all([
+    getTenantContext(slug, { require: "sales:read" }),
+    query,
+    supabase.from("profiles").select("id, full_name"),
+  ]);
   if (error) throw new Error(error.message);
   const names = new Map((team.data ?? []).map((p) => [p.id, p.full_name]));
 

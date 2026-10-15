@@ -11,10 +11,12 @@ export const metadata: Metadata = { title: "Vender" };
 
 export default async function PosPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ctx = await getTenantContext(slug, { require: "sales:create" });
   const supabase = await createClient();
 
-  const [{ data: session, error }, products] = await Promise.all([
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [ctx, { data: session, error }, products] = await Promise.all([
+    getTenantContext(slug, { require: "sales:create" }),
     supabase.from("cash_sessions").select("id").is("closed_at", null).maybeSingle(),
     supabase
       .from("products")

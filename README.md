@@ -26,11 +26,12 @@ En Supabase → Authentication → URL Configuration agrega `http://localhost:30
 | 6 | `20261017000100_credit.sql` | Fiados 2/2: abonos, saldos y costo por venta |
 | 7 | `20261018000000_tables_orders.sql` | Mesas y pedidos |
 | 8 | `20261019000000_reports.sql` | Reportes |
-| 9 | `20261020000000_billing.sql` | Suscripción S/ 35/mes, prueba de 14 días, panel de administración |
+| 9 | `20261020000000_billing.sql` | Suscripción S/ 35/mes, prueba gratis, panel de administración |
+| 10 | `20261021000000_trial_7_days.sql` | Prueba gratis de 7 días para los nuevos registros |
 
 ### Cobro de la suscripción
 
-**Acceso de cada negocio** = el mayor de: fin de la prueba (14 días), `paid_until` + 3 días de gracia, o acceso provisional (3 días al reportar un pago). Se aplica en `private.current_org_id()`: un negocio vencido no puede leer ni escribir nada y se le envía a `/billing`.
+**Acceso de cada negocio** = el mayor de: fin de la prueba (7 días), `paid_until` + 3 días de gracia, o acceso provisional (3 días al reportar un pago). Se aplica en `private.current_org_id()`: un negocio vencido no puede leer ni escribir nada y se le envía a `/billing`.
 
 1. **Hazte administrador** (SQL Editor, una vez):
    ```sql

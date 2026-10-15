@@ -8,7 +8,7 @@
 export const BILLING = {
   priceSoles: 35,
   priceLabel: "S/ 35",
-  trialDays: 14,
+  trialDays: 7, // debe coincidir con el DEFAULT de organizations.trial_ends_at (migración 20261021000000)
   graceDays: 3,
   bank: {
     name: "Interbank",

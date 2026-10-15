@@ -13,7 +13,6 @@ const dateFmt = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day
 
 export default async function OverviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ctx = await getTenantContext(slug);
   const supabase = await createClient();
 
   // Fechas en hora de Lima (el servidor puede estar en UTC).
@@ -24,7 +23,10 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
   const yesterday = limaStartOfDay(-1).toISOString();
 
   // RLS limita todo a la organización activa: no hace falta filtrar por organization_id.
-  const [salesToday, salesYesterday, lowStock, thisMonth, prevMonth, recent] = await Promise.all([
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [ctx, salesToday, salesYesterday, lowStock, thisMonth, prevMonth, recent] = await Promise.all([
+    getTenantContext(slug),
     supabase.rpc("sales_summary", { p_from: today, p_to: tomorrow }),
     supabase.rpc("sales_summary", { p_from: yesterday, p_to: today }),
     supabase.from("products").select("id", { count: "exact", head: true }).eq("active", true).eq("low_stock", true),

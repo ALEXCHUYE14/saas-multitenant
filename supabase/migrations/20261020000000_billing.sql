@@ -3,7 +3,7 @@
 --  Requiere: 20261013000000_multitenant_core.sql
 --
 --  Acceso de un negocio = hasta el mayor de:
---    trial_ends_at (14 días desde el registro)
+--    trial_ends_at (días de prueba desde el registro; hoy 7, ver 20261021000000)
 --    paid_until + 3 días de gracia
 --    provisional_until (3 días al reportar un pago manual, mientras se revisa)
 --  La regla vive en private.current_org_id(): vencido = RLS no devuelve nada.
@@ -21,7 +21,7 @@
 -- 1. Periodos de acceso
 -- -----------------------------------------------------------------------------
 alter table public.organizations
-  add column if not exists trial_ends_at     timestamptz not null default (now() + interval '14 days'),
+  add column if not exists trial_ends_at     timestamptz not null default (now() + interval '7 days'),
   add column if not exists paid_until        timestamptz,
   add column if not exists provisional_until timestamptz;
 

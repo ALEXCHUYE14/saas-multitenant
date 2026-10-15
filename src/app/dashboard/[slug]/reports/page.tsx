@@ -21,12 +21,14 @@ type SP = Promise<{ range?: string; from?: string; to?: string }>;
 
 export default async function ReportsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: SP }) {
   const { slug } = await params;
-  await getTenantContext(slug, { require: "reports:read", onForbidden: "redirect" });
   const range = resolveRange(await searchParams);
   const args = { p_from: range.from.toISOString(), p_to: range.to.toISOString() };
 
   const supabase = await createClient();
-  const [summary, byDay, methods, top, profit, sellers, team] = await Promise.all([
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [, summary, byDay, methods, top, profit, sellers, team] = await Promise.all([
+    getTenantContext(slug, { require: "reports:read", onForbidden: "redirect" }),
     supabase.rpc("report_summary", args),
     supabase.rpc("report_sales_by_day", args),
     supabase.rpc("report_payment_methods", args),

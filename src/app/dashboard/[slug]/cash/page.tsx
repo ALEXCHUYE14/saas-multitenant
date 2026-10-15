@@ -16,10 +16,12 @@ const dateFmt = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day
 
 export default async function CashPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  await getTenantContext(slug, { require: "cash:operate" });
   const supabase = await createClient();
 
-  const [{ data: open, error }, history, team] = await Promise.all([
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [, { data: open, error }, history, team] = await Promise.all([
+    getTenantContext(slug, { require: "cash:operate" }),
     supabase.from("cash_sessions").select("*").is("closed_at", null).maybeSingle(),
     supabase.from("cash_sessions").select("*").not("closed_at", "is", null).order("closed_at", { ascending: false }).limit(15),
     supabase.from("profiles").select("id, full_name"),

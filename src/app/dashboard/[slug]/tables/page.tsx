@@ -12,10 +12,12 @@ const timeFmt = new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", hou
 
 export default async function TablesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ctx = await getTenantContext(slug, { require: "orders:operate" });
   const supabase = await createClient();
 
-  const [tables, orders] = await Promise.all([
+  // Verificación del negocio y datos EN PARALELO (antes iban en fila): la página no
+  // se muestra hasta que ambas terminen; si la verificación falla, redirige igual.
+  const [ctx, tables, orders] = await Promise.all([
+    getTenantContext(slug, { require: "orders:operate" }),
     supabase.from("dining_tables").select("*").order("sort_order").order("name"),
     supabase
       .from("orders")
