@@ -16,11 +16,24 @@ const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/reset-password", "/pr
  * del dashboard, y RLS la garantiza a nivel de datos.
  */
 export async function updateSession(request: NextRequest) {
+  // Sin estas variables (p. ej. no cargadas en Vercel) todo el sitio daría un 500
+  // genérico: se responde con un mensaje que dice exactamente qué falta.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("[config] Faltan NEXT_PUBLIC_SUPABASE_URL y/o NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    return new NextResponse(
+      "Configuración incompleta: faltan las variables NEXT_PUBLIC_SUPABASE_URL y/o NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+        "En Vercel: Settings → Environment Variables, agrégalas y vuelve a desplegar (Redeploy).",
+      { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
+    );
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
