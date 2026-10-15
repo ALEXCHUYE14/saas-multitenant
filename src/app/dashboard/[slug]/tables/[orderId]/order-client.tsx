@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Minus, Plus, Printer, Trash2 } from "lucide-react";
-import { addOrderItem, cancelOrder, moveOrder, payOrder, setOrderItemQuantity } from "../actions";
+import { addOrderItem, cancelOrder, moveOrder, payOrder, setOrderItemQuantity, type LinesResult } from "../actions";
+import type { OrderLine } from "../order-lines";
 import { useTenant } from "@/hooks/use-tenant";
 import { cn } from "@/lib/cn";
 import { ProductGrid, type PosProduct } from "@/components/pos/product-grid";
@@ -11,23 +12,11 @@ import { MobileTotalBar } from "@/components/pos/mobile-total-bar";
 import { CheckoutPanel, type CheckoutPayment, type ChargeResult } from "@/components/pos/checkout-panel";
 import { FormAlert } from "@/components/ui/form-alert";
 import { formatCents, formatMoney, lineCents, unitDecimals } from "@/lib/format";
-import type { ProductUnit } from "@/lib/supabase/database.types";
-
-export type OrderLine = {
-  id: string;
-  productId: string;
-  name: string;
-  unit: ProductUnit;
-  price: number;
-  quantity: number;
-  note: string | null;
-  available: boolean;
-};
 
 export function OrderClient({
   orderId,
   title,
-  lines,
+  lines: initialLines,
   products,
   freeTables,
   currentTableId,
@@ -48,12 +37,27 @@ export function OrderClient({
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
 
-  const run = (fn: () => Promise<{ error?: string } | undefined>) =>
+  // Las acciones devuelven las líneas actualizadas (no se recarga la página con
+  // todo el catálogo). Si el servidor envía la página de nuevo, manda ella.
+  const [lines, setLines] = useState(initialLines);
+  useEffect(() => setLines(initialLines), [initialLines]);
+  // Toques rápidos: las respuestas pueden llegar desordenadas. Se aplica una
+  // respuesta solo si es más nueva que la última aplicada (una más vieja nunca pisa).
+  const nextId = useRef(0);
+  const applied = useRef(0);
+
+  const run = (fn: () => Promise<LinesResult | { error?: string } | undefined>) => {
+    const id = ++nextId.current;
     start(async () => {
       setError(undefined);
       const res = await fn();
       if (res?.error) setError(res.error);
+      if (res && "lines" in res && res.lines && id > applied.current) {
+        applied.current = id;
+        setLines(res.lines);
+      }
     });
+  };
 
   const pick = (p: PosProduct) => {
     const n = note;
@@ -63,7 +67,8 @@ export function OrderClient({
 
   // "+" suma en el servidor (atómico); "−" y la edición fijan el valor exacto.
   const increment = (l: OrderLine) => run(() => addOrderItem(organization.slug, orderId, l.productId, l.note ?? undefined));
-  const setQty = (l: OrderLine, value: string) => run(() => setOrderItemQuantity(organization.slug, l.id, value));
+  const setQty = (l: OrderLine, value: string) =>
+    run(() => setOrderItemQuantity(organization.slug, orderId, l.id, value));
   const decrement = (l: OrderLine) => setQty(l, l.quantity > 1 ? String(l.quantity - 1) : "0");
 
   const subtotal = lines.reduce((a, l) => a + lineCents(l.quantity, l.price), 0);
@@ -202,7 +207,7 @@ export function OrderClient({
             ))}
           </select>
           <div className="flex gap-3">
-            <Link href={href("/tables")} className="text-ink-2 hover:text-ink">
+            <Link prefetch={false} href={href("/tables")} className="text-ink-2 hover:text-ink">
               Volver
             </Link>
             <button

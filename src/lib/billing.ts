@@ -17,10 +17,24 @@ export const BILLING = {
     account: "7733259712394",
     cci: "00377301325971239493",
   },
-  // Opcionales: sin número configurado, la opción no se muestra.
+  // Yape y Plin se cobran con los QR de src/img/ (yape.jpeg, plin.jpeg).
+  // Opcional: número para "Yapear al celular" (si está vacío, solo se muestra el QR).
   yapeNumber: process.env.NEXT_PUBLIC_BILLING_YAPE_NUMBER?.trim() || null,
   plinNumber: process.env.NEXT_PUBLIC_BILLING_PLIN_NUMBER?.trim() || null,
+  // WhatsApp para enviar comprobantes y soporte (formato internacional sin "+").
+  whatsapp: "51924996961",
+  whatsappLabel: "+51 924 996 961",
 } as const;
+
+/** Enlace de WhatsApp con un mensaje ya escrito. */
+export function whatsappLink(message: string): string {
+  return `https://wa.me/${BILLING.whatsapp}?text=${encodeURIComponent(message)}`;
+}
+
+/** Número de operación como lo guarda la BD: sin espacios ni puntos, en mayúsculas. */
+export function normalizeOperation(raw: string): string {
+  return raw.replace(/[\s.]/g, "").toUpperCase();
+}
 
 const DAY_MS = 86_400_000;
 

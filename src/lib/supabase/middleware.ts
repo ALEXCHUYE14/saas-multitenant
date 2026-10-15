@@ -1,15 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
+import { hasAuthCookie } from "./auth-cookie";
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
 // /reset-password exige la sesión que crea el enlace de recuperación.
 const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/reset-password", "/print", "/billing", "/admin"];
 
 /**
- * Refresca la sesión de Supabase en cada request y aplica las reglas de acceso:
+ * Refresca la sesión de Supabase y aplica las reglas de acceso:
  *  - Sin sesión en /dashboard/* u /onboarding → /login?next=...
  *  - Con sesión en /login o /register        → /dashboard
+ *
+ * Ahorro de cuota (egress / logs de Supabase Auth): solo se consulta a Auth
+ * cuando la ruta lo necesita Y existe una cookie de sesión. Rutas públicas y
+ * visitantes sin cookie se resuelven sin ninguna llamada.
  *
  * La validación de pertenencia al tenant ([slug]) NO se hace aquí (evita una
  * consulta a la BD por request); la hace getTenantContext() en el layout
@@ -27,6 +32,23 @@ export async function updateSession(request: NextRequest) {
         "En Vercel: Settings → Environment Variables, agrégalas y vuelve a desplegar (Redeploy).",
       { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
     );
+  }
+
+  const { pathname, search } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isAuthRoute = AUTH_ROUTES.includes(pathname);
+
+  // Ruta pública (landing, webhooks, callback…): nada que validar ni refrescar aquí.
+  if (!isProtected && !isAuthRoute) return NextResponse.next({ request });
+
+  // Sin cookie de sesión no puede haber usuario: se decide sin llamar a Supabase.
+  if (!hasAuthCookie(request.cookies.getAll())) {
+    if (!isProtected) return NextResponse.next({ request });
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    url.searchParams.set("next", `${pathname}${search}`);
+    return NextResponse.redirect(url);
   }
 
   let response = NextResponse.next({ request });
@@ -52,10 +74,6 @@ export async function updateSession(request: NextRequest) {
   // getClaims() valida la firma del JWT (no confíes en getSession() en servidor).
   const { data } = await supabase.auth.getClaims();
   const isAuthenticated = Boolean(data?.claims?.sub);
-
-  const { pathname, search } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
   if (!isAuthenticated && isProtected) {
     const url = request.nextUrl.clone();

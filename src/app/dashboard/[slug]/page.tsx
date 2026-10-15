@@ -66,7 +66,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
       <section className="mt-10">
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="font-semibold">Últimos clientes</h2>
-          <Link href={`/dashboard/${slug}/customers`} className="text-sm text-ink-2 hover:text-ink">
+          <Link prefetch={false} href={`/dashboard/${slug}/customers`} className="text-sm text-ink-2 hover:text-ink">
             Ver todos
           </Link>
         </div>
@@ -90,7 +90,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
               title="Aún no hay clientes"
               description="Registra al primero para empezar a ver tu actividad aquí."
               action={
-                <Link
+                <Link prefetch={false}
                   href={`/dashboard/${slug}/customers?new=1`}
                   className="inline-flex h-10 items-center rounded-control bg-accent px-4 text-sm font-medium text-accent-ink"
                 >

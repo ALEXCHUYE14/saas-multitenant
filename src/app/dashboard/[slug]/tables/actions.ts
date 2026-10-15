@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { assertPermission } from "@/lib/tenant";
 import { can } from "@/lib/permissions";
 import { parseDecimal } from "@/lib/format";
+import { loadOrderLines, type OrderLine } from "./order-lines";
 
 const uuid = z.uuid();
 
@@ -32,6 +33,8 @@ const ORDER_ERRORS: Record<string, string> = {
 };
 
 type Result = { error?: string };
+/** Resultado de editar un pedido: las líneas actualizadas (sin recargar la página). */
+export type LinesResult = { error?: string; lines?: OrderLine[] };
 
 function fail(error: { code?: string; message: string } | null, fallback: string): Result {
   if (error?.code === "22003") return { error: "El importe es demasiado grande." };
@@ -106,7 +109,7 @@ export async function openOrder(slug: string, tableId: string | null, label?: st
   redirect(`/dashboard/${slug}/tables/${data.id}`);
 }
 
-export async function addOrderItem(slug: string, orderId: string, productId: string, note?: string): Promise<Result> {
+export async function addOrderItem(slug: string, orderId: string, productId: string, note?: string): Promise<LinesResult> {
   await assertPermission(slug, "orders:operate");
   if (!uuid.safeParse(orderId).success || !uuid.safeParse(productId).success) return { error: "Datos no válidos." };
   const cleanNote = String(note ?? "").trim();
@@ -120,22 +123,25 @@ export async function addOrderItem(slug: string, orderId: string, productId: str
     p_note: cleanNote || null,
   });
   if (error) return fail(error, "No se pudo agregar el producto.");
-  revalidate(slug);
-  return {};
+  return { lines: await loadOrderLines(supabase, orderId) };
 }
 
 /** `quantity` llega como texto del input ("2", "0.5", "1,25"); "0" quita la línea. */
-export async function setOrderItemQuantity(slug: string, itemId: string, quantity: string): Promise<Result> {
+export async function setOrderItemQuantity(
+  slug: string,
+  orderId: string,
+  itemId: string,
+  quantity: string,
+): Promise<LinesResult> {
   await assertPermission(slug, "orders:operate");
-  if (!uuid.safeParse(itemId).success) return { error: "Ítem no válido." };
+  if (!uuid.safeParse(orderId).success || !uuid.safeParse(itemId).success) return { error: "Ítem no válido." };
   const q = parseDecimal(String(quantity ?? ""), 3, 6);
   if (q === null) return { error: ORDER_ERRORS.invalid_quantity };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_order_item_quantity", { p_item_id: itemId, p_quantity: q });
   if (error) return fail(error, "No se pudo cambiar la cantidad.");
-  revalidate(slug);
-  return {};
+  return { lines: await loadOrderLines(supabase, orderId) };
 }
 
 export async function moveOrder(slug: string, orderId: string, tableId: string | null): Promise<Result> {

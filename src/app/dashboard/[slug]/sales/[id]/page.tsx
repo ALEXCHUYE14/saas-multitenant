@@ -44,7 +44,7 @@ export default async function SalePage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
-      <Link href={`/dashboard/${slug}/sales`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
+      <Link prefetch={false} href={`/dashboard/${slug}/sales`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
         <ArrowLeft className="size-4" />
         Ventas
       </Link>
@@ -55,7 +55,7 @@ export default async function SalePage({ params }: { params: Promise<{ slug: str
         actions={
           <>
             {voided && <Badge tone="danger">Anulada</Badge>}
-            <Link
+            <Link prefetch={false}
               href={`/print/${slug}/sales/${sale.id}`}
               className="inline-flex h-10 items-center gap-2 rounded-control border border-line px-4 text-sm text-ink-2 hover:text-ink"
             >

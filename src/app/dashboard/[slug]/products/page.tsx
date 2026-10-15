@@ -59,7 +59,10 @@ export default async function ProductsPage({ params, searchParams }: { params: P
   const [{ data, count, error }, editing, cats, lowCount] = await Promise.all([
     query,
     editId ? supabase.from("products").select("*").eq("id", editId).maybeSingle() : null,
-    canWrite ? supabase.from("products").select("category").not("category", "is", null).limit(1000) : null,
+    // Categorías para autocompletar: solo si el formulario se va a mostrar (ahorra egress).
+    canWrite && (sp.new === "1" || editId)
+      ? supabase.from("products").select("category").not("category", "is", null).limit(1000)
+      : null,
     supabase.from("products").select("id", { count: "exact", head: true }).eq("active", true).eq("low_stock", true),
   ]);
   if (error) throw new Error(error.message);
@@ -90,7 +93,7 @@ export default async function ProductsPage({ params, searchParams }: { params: P
 
   const rowActions = (r: Product) => (
     <div className="flex justify-end gap-1">
-      <Link
+      <Link prefetch={false}
         href={qs({ edit: r.id, page: page > 1 ? String(page) : undefined })}
         className="grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
         aria-label={`Editar ${r.name}`}
@@ -102,7 +105,7 @@ export default async function ProductsPage({ params, searchParams }: { params: P
   );
 
   const nameCell = (r: Product) => (
-    <Link href={`${base}/${r.id}`} className="font-medium hover:underline">
+    <Link prefetch={false} href={`${base}/${r.id}`} className="font-medium hover:underline">
       {r.name}
     </Link>
   );
@@ -115,7 +118,7 @@ export default async function ProductsPage({ params, searchParams }: { params: P
         actions={
           canWrite &&
           !showForm && (
-            <Link
+            <Link prefetch={false}
               href={`${base}?new=1`}
               className="inline-flex h-10 items-center gap-2 rounded-control bg-accent px-4 text-sm font-medium text-accent-ink hover:brightness-105"
             >
@@ -134,7 +137,7 @@ export default async function ProductsPage({ params, searchParams }: { params: P
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <nav aria-label="Filtro" className="flex max-w-full gap-1 self-start overflow-x-auto rounded-control bg-surface-2 p-0.5 text-sm">
           {(Object.keys(VIEWS) as View[]).map((v) => (
-            <Link
+            <Link prefetch={false}
               key={v}
               href={qs({ view: v === "active" ? "" : v })}
               aria-current={view === v ? "page" : undefined}

@@ -68,7 +68,7 @@ export default async function CustomersPage({ params, searchParams }: { params: 
   const base = `/dashboard/${slug}/customers`;
   const hrefFor = (p: number) => `${base}?${new URLSearchParams({ ...(term && { q: term }), page: String(p) })}`;
   const nameLink = (id: string, name: string) => (
-    <Link href={`${base}/${id}`} className="font-medium hover:underline">
+    <Link prefetch={false} href={`${base}/${id}`} className="font-medium hover:underline">
       {name}
     </Link>
   );
@@ -76,7 +76,7 @@ export default async function CustomersPage({ params, searchParams }: { params: 
   const rowActions = (r: Customer) => (
     <div className="flex justify-end gap-1">
       {canWrite && (
-        <Link
+        <Link prefetch={false}
           href={`${base}?edit=${r.id}`}
           className="grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
           aria-label={`Editar a ${r.full_name}`}
@@ -95,7 +95,7 @@ export default async function CustomersPage({ params, searchParams }: { params: 
         description="Personas y empresas que atiende tu negocio."
         actions={
           canWrite && !showForm && (
-            <Link
+            <Link prefetch={false}
               href={`${base}?new=1`}
               className="inline-flex h-10 items-center gap-2 rounded-control bg-accent px-4 text-sm font-medium text-accent-ink hover:brightness-105"
             >
@@ -117,7 +117,7 @@ export default async function CustomersPage({ params, searchParams }: { params: 
           ].map((t) => {
             const active = (t.key === "debt") === debtView;
             return (
-              <Link
+              <Link prefetch={false}
                 key={t.key}
                 href={t.href}
                 aria-current={active ? "page" : undefined}

@@ -55,7 +55,7 @@ export default async function AdminPage() {
     <div className="min-h-dvh">
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-10">
         <Logo />
-        <Link href="/dashboard" className="text-sm text-ink-2 hover:text-ink">
+        <Link prefetch={false} href="/dashboard" className="text-sm text-ink-2 hover:text-ink">
           Ir a mi panel
         </Link>
       </header>

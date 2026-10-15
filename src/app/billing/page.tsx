@@ -4,14 +4,17 @@ import { redirect } from "next/navigation";
 import { CreditCard, Landmark, Smartphone } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/(auth)/actions";
-import { BILLING, billingPhase, daysLeft } from "@/lib/billing";
+import { BILLING, billingPhase, daysLeft, whatsappLink } from "@/lib/billing";
 import { toLimaDateString } from "@/lib/dates";
 import { formatMoney } from "@/lib/format";
 import { mercadoPagoEnabled } from "@/lib/mercadopago";
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { FormAlert } from "@/components/ui/form-alert";
-import { CancelCardButton, CardSubscribeForm, CopyField, ReportPaymentForm } from "./billing-forms";
+import { CancelCardButton, CardSubscribeForm, CopyField, ReportPaymentForm, WhatsAppButton } from "./billing-forms";
+import { QrCard } from "./qr-card";
+import yapeQr from "@/img/yape.jpeg";
+import plinQr from "@/img/plin.jpeg";
 import type { BillingMethod, BillingPaymentStatus } from "@/lib/supabase/database.types";
 
 export const metadata: Metadata = { title: "Suscripción" };
@@ -27,8 +30,10 @@ const STATUS: Record<BillingPaymentStatus, { label: string; tone: "ok" | "warn" 
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ mp?: string }> }) {
   const { mp } = await searchParams;
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/login?next=/billing");
+  const { data: auth } = await supabase.auth.getClaims();
+  const claims = auth?.claims;
+  if (!claims?.sub) redirect("/login?next=/billing");
+  const userEmail = typeof claims.email === "string" ? claims.email : "";
 
   const { data, error } = await supabase.rpc("my_billing");
   if (error) throw new Error(error.message);
@@ -54,8 +59,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const suspended = b.status === "suspended" || b.status === "canceled";
   const cardActive = sub?.data && ["authorized", "pending"].includes(sub.data.status);
   const manualMethods = [
-    ...(BILLING.yapeNumber ? [{ value: "yape", label: "Yape" }] : []),
-    ...(BILLING.plinNumber ? [{ value: "plin", label: "Plin" }] : []),
+    { value: "yape", label: "Yape" },
+    { value: "plin", label: "Plin" },
     { value: "transfer", label: "Transferencia bancaria" },
   ];
 
@@ -77,7 +82,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         <Logo />
         <div className="flex items-center gap-3 text-sm">
           {b.has_access && (
-            <Link href={`/dashboard/${b.slug}`} className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
+            <Link prefetch={false} href={`/dashboard/${b.slug}`} className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
               Ir a mi panel
             </Link>
           )}
@@ -141,42 +146,57 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                     <CancelCardButton />
                   </div>
                 ) : (
-                  <CardSubscribeForm defaultEmail={auth.user.email ?? ""} />
+                  <CardSubscribeForm defaultEmail={userEmail} />
                 )}
               </section>
             )}
 
-            {/* Yape / Plin / transferencia */}
+            {/* 1. Yape / Plin con QR */}
             <section className="rounded-panel border border-line bg-surface p-5 sm:p-6">
               <h2 className="flex items-center gap-2 font-semibold">
-                {BILLING.yapeNumber || BILLING.plinNumber ? (
-                  <Smartphone className="size-5 text-accent" />
-                ) : (
-                  <Landmark className="size-5 text-accent" />
-                )}
-                {BILLING.yapeNumber || BILLING.plinNumber ? "Yape, Plin o transferencia" : "Transferencia bancaria"}
+                <Smartphone className="size-5 text-accent" />
+                Yape o Plin
               </h2>
               <p className="mt-1 text-sm text-ink-2">
-                Paga {BILLING.priceLabel} (o varios meses) y reporta el pago abajo. Tienes acceso inmediato mientras lo
-                confirmamos.
+                Escanea el QR desde la app y paga {BILLING.priceLabel} (o varios meses). ¿Estás en el celular? Toca
+                «Guardar QR» y súbelo desde la galería en Yape o Plin.
               </p>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <QrCard app="Yape" image={yapeQr} number={BILLING.yapeNumber} fileName="yape-pago-suscripcion.jpeg" />
+                <QrCard app="Plin" image={plinQr} number={BILLING.plinNumber} fileName="plin-pago-suscripcion.jpeg" />
+              </div>
+            </section>
 
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                {BILLING.yapeNumber && <CopyField label="Yape" value={BILLING.yapeNumber} />}
-                {BILLING.plinNumber && <CopyField label="Plin" value={BILLING.plinNumber} />}
+            {/* 2. Transferencia */}
+            <section className="rounded-panel border border-line bg-surface p-5 sm:p-6">
+              <h2 className="flex items-center gap-2 font-semibold">
+                <Landmark className="size-5 text-accent" />
+                Transferencia bancaria
+              </h2>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <CopyField label={`${BILLING.bank.name} · ${BILLING.bank.accountType}`} value={BILLING.bank.account} />
                 <CopyField label="CCI (desde otros bancos)" value={BILLING.bank.cci} />
               </div>
               <p className="mt-2 text-xs text-ink-3">Titular: {BILLING.bank.holder}</p>
+            </section>
 
-              <div className="mt-6 border-t border-line pt-5">
-                <h3 className="mb-4 text-sm font-semibold">Reportar mi pago</h3>
-                {b.pending_payment ? (
+            {/* 3. Reporte (un solo paso para Yape, Plin y transferencia) */}
+            <section id="reportar" className="scroll-mt-4 rounded-panel border border-accent/40 bg-surface p-5 sm:p-6">
+              <h2 className="font-semibold">¿Ya pagaste? Repórtalo aquí</h2>
+              <p className="mt-1 mb-5 text-sm text-ink-2">
+                Tienes acceso inmediato mientras confirmamos tu pago (normalmente el mismo día).
+              </p>
+              {b.pending_payment ? (
+                <div className="grid gap-3">
                   <p className="text-sm text-ink-2">Ya tienes un pago en revisión. Podrás reportar otro cuando se confirme.</p>
-                ) : (
-                  <ReportPaymentForm methods={manualMethods} today={toLimaDateString(new Date())} />
-                )}
-              </div>
+                  <WhatsAppButton
+                    message={`Hola, soy de ${b.name}. Reporté mi pago de la suscripción y quería confirmar si ya lo recibieron.`}
+                    label="Consultar por WhatsApp"
+                  />
+                </div>
+              ) : (
+                <ReportPaymentForm methods={manualMethods} today={toLimaDateString(new Date())} orgName={b.name} />
+              )}
             </section>
 
             {/* Historial */}
@@ -206,6 +226,18 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             )}
           </>
         )}
+
+        <p className="text-center text-sm text-ink-2">
+          ¿Dudas o problemas con tu pago?{" "}
+          <a
+            href={whatsappLink(`Hola, soy de ${b.name}. Tengo una consulta sobre mi suscripción.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-ink underline decoration-[#25D366] decoration-2 underline-offset-4"
+          >
+            Escríbenos por WhatsApp al {BILLING.whatsappLabel}
+          </a>
+        </p>
       </main>
     </div>
   );

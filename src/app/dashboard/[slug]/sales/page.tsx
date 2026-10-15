@@ -41,7 +41,7 @@ export default async function SalesPage({ params, searchParams }: { params: Prom
   const hrefFor = (p: number) => `${base}?${new URLSearchParams({ ...(sessionId && { session: sessionId }), page: String(p) })}`;
 
   const numberCell = (s: Sale) => (
-    <Link href={`${base}/${s.id}`} className="font-medium tabular hover:underline">
+    <Link prefetch={false} href={`${base}/${s.id}`} className="font-medium tabular hover:underline">
       #{s.number}
     </Link>
   );
@@ -56,7 +56,7 @@ export default async function SalesPage({ params, searchParams }: { params: Prom
         description={sessionId ? "Ventas del turno de caja seleccionado." : "Todas las ventas registradas."}
         actions={
           sessionId && (
-            <Link href={base} className="inline-flex h-10 items-center rounded-control border border-line px-4 text-sm text-ink-2 hover:text-ink">
+            <Link prefetch={false} href={base} className="inline-flex h-10 items-center rounded-control border border-line px-4 text-sm text-ink-2 hover:text-ink">
               Ver todas
             </Link>
           )
@@ -90,7 +90,7 @@ export default async function SalesPage({ params, searchParams }: { params: Prom
             title="Aún no hay ventas"
             description="Las ventas que registres desde «Vender» aparecerán aquí."
             action={
-              <Link
+              <Link prefetch={false}
                 href={`/dashboard/${slug}/pos`}
                 className="inline-flex h-10 items-center rounded-control bg-accent px-4 text-sm font-medium text-accent-ink"
               >

@@ -25,9 +25,12 @@ type Membership =
  */
 export const getMembership = cache(async (): Promise<Membership> => {
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  const user = auth.user;
-  if (!user) return { status: "unauthenticated" };
+  // getClaims() verifica la firma del JWT. Con las JWT Signing Keys (asimétricas)
+  // de Supabase lo hace localmente (sin petición a Auth): menos egress y logs.
+  const { data: auth } = await supabase.auth.getClaims();
+  const claims = auth?.claims;
+  if (!claims?.sub) return { status: "unauthenticated" };
+  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : null };
 
   const { data: profile, error } = await supabase
     .from("profiles")
@@ -43,7 +46,7 @@ export const getMembership = cache(async (): Promise<Membership> => {
     status: "member",
     ctx: {
       userId: user.id,
-      email: user.email ?? null,
+      email: user.email,
       fullName: profile.full_name,
       role: profile.role,
       organization: profile.organization,

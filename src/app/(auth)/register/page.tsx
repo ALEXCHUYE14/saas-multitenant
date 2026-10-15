@@ -14,7 +14,7 @@ export default function RegisterPage() {
 
       <p className="mt-8 text-sm text-ink-2">
         ¿Ya tienes cuenta?{" "}
-        <Link href="/login" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
+        <Link prefetch={false} href="/login" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
           Inicia sesión
         </Link>
       </p>

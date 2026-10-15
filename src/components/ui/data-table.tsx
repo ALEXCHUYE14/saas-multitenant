@@ -137,10 +137,10 @@ export function Pagination({
         {from}–{to} de {total}
       </span>
       <div className="flex gap-2">
-        <Link href={hrefFor(page - 1)} aria-disabled={page <= 1} className={linkCls} aria-label="Página anterior">
+        <Link prefetch={false} href={hrefFor(page - 1)} aria-disabled={page <= 1} className={linkCls} aria-label="Página anterior">
           <ChevronLeft className="size-4" />
         </Link>
-        <Link href={hrefFor(page + 1)} aria-disabled={page >= pages} className={linkCls} aria-label="Página siguiente">
+        <Link prefetch={false} href={hrefFor(page + 1)} aria-disabled={page >= pages} className={linkCls} aria-label="Página siguiente">
           <ChevronRight className="size-4" />
         </Link>
       </div>

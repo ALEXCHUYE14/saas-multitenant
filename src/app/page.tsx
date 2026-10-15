@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Beef, Car, ShieldCheck, ShoppingBasket, Smartphone, Users, UtensilsCrossed } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { hasAuthCookie } from "@/lib/supabase/auth-cookie";
 import { Logo } from "@/components/logo";
 import { BILLING } from "@/lib/billing";
 
@@ -24,14 +25,14 @@ const VENTAJAS = [
   { Icon: ShieldCheck, title: "Tus datos, solo tuyos", text: "Cada negocio tiene su espacio aislado. Nadie más puede ver tu información." },
 ];
 
+/**
+ * Solo para elegir el texto del botón ("Ir a mi panel" / "Crear cuenta"): basta
+ * con saber si hay cookie de sesión, sin consultar a Supabase en cada visita
+ * (la landing la ven también bots y anónimos). Si la sesión expiró, /dashboard
+ * igual lleva al login.
+ */
 async function hasSession() {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getClaims();
-    return Boolean(data?.claims?.sub);
-  } catch {
-    return false;
-  }
+  return hasAuthCookie((await cookies()).getAll());
 }
 
 export default async function Home() {
@@ -46,11 +47,11 @@ export default async function Home() {
         <Logo />
         <nav className="flex items-center gap-1 sm:gap-2">
           {!loggedIn && (
-            <Link href="/login" className="inline-flex h-9 items-center rounded-control px-3 text-sm text-ink-2 hover:text-ink">
+            <Link prefetch={false} href="/login" className="inline-flex h-9 items-center rounded-control px-3 text-sm text-ink-2 hover:text-ink">
               Iniciar sesión
             </Link>
           )}
-          <Link
+          <Link prefetch={false}
             href={primary.href}
             className="inline-flex h-9 items-center rounded-control bg-accent px-3 text-sm font-medium text-accent-ink hover:brightness-105"
           >
@@ -72,7 +73,7 @@ export default async function Home() {
               cuadernos.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
+              <Link prefetch={false}
                 href={primary.href}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-accent px-5 font-medium text-accent-ink hover:brightness-105"
               >
@@ -80,7 +81,7 @@ export default async function Home() {
                 <ArrowRight className="size-4" />
               </Link>
               {!loggedIn && (
-                <Link
+                <Link prefetch={false}
                   href="/login"
                   className="inline-flex h-12 items-center justify-center rounded-control border border-line px-5 font-medium text-ink hover:border-ink-3"
                 >
@@ -149,7 +150,7 @@ export default async function Home() {
                 <li>✓ Paga con tarjeta, Yape, Plin o transferencia</li>
                 <li>✓ Tus datos se guardan aunque pauses</li>
               </ul>
-              <Link
+              <Link prefetch={false}
                 href={primary.href}
                 className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-control bg-accent px-5 font-medium text-accent-ink hover:brightness-105"
               >
@@ -167,7 +168,7 @@ export default async function Home() {
               <h2 className="text-2xl font-semibold tracking-tight">Empieza hoy, gratis.</h2>
               <p className="mt-1 text-ink-2">Crea tu negocio, invita a tu equipo y registra a tus primeros clientes.</p>
             </div>
-            <Link
+            <Link prefetch={false}
               href={primary.href}
               className="inline-flex h-12 shrink-0 items-center gap-2 rounded-control bg-accent px-5 font-medium text-accent-ink hover:brightness-105"
             >

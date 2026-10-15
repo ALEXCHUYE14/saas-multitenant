@@ -88,7 +88,7 @@ export const ProductGrid = forwardRef<
       {products.length === 0 ? (
         <p className="mt-6 text-sm text-ink-2">
           No hay productos activos.{" "}
-          <Link href={href("/products?new=1")} className="underline underline-offset-4">
+          <Link prefetch={false} href={href("/products?new=1")} className="underline underline-offset-4">
             Registra el primero
           </Link>
           .

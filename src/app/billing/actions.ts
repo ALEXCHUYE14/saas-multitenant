@@ -6,19 +6,19 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { BILLING } from "@/lib/billing";
+import { BILLING, normalizeOperation } from "@/lib/billing";
 import { parseDecimal } from "@/lib/format";
 import { cancelPreapproval, createPreapproval, mercadoPagoEnabled } from "@/lib/mercadopago";
 
 /** Negocio del usuario (aunque esté vencido), solo si es el propietario. */
 async function requireOwner() {
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error("No autorizado");
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims?.sub) throw new Error("No autorizado");
   const { data } = await supabase.rpc("my_billing");
   const b = data?.[0];
   if (!b || !b.is_owner) throw new Error("Solo el propietario puede gestionar la suscripción.");
-  return { supabase, billing: b, user: auth.user };
+  return { supabase, billing: b, user: { id: auth.claims.sub } };
 }
 
 async function siteOrigin() {
@@ -104,6 +104,8 @@ export async function cancelCardSubscription(): Promise<{ error?: string }> {
 export type ReportState = {
   error?: string;
   saved?: boolean;
+  /** Datos del pago registrado, para el mensaje de WhatsApp. */
+  savedInfo?: { method: string; operation: string; amount: string };
   fieldErrors?: Partial<Record<"method" | "operation" | "paid_on" | "amount" | "receipt", string>>;
   values?: Record<string, string>;
 };
@@ -132,14 +134,17 @@ export async function reportManualPayment(_: ReportState, formData: FormData): P
 
   const values = {
     method: String(formData.get("method") ?? ""),
-    operation: String(formData.get("operation") ?? "").trim().toUpperCase(),
+    // "0123 4567" o "12.345.678" (copiado de la app) → "01234567"
+    operation: normalizeOperation(String(formData.get("operation") ?? "")),
     paid_on: String(formData.get("paid_on") ?? ""),
     amount: String(formData.get("amount") ?? "").trim(),
   };
   const fieldErrors: ReportState["fieldErrors"] = {};
 
   if (!["yape", "plin", "transfer"].includes(values.method)) fieldErrors.method = "Elige cómo pagaste.";
-  if (!/^[A-Z0-9-]{4,30}$/.test(values.operation)) fieldErrors.operation = "Número de operación no válido (4 a 30 letras o números).";
+  if (!values.operation) fieldErrors.operation = "Escribe el número de operación que aparece en tu constancia.";
+  else if (!/^[A-Z0-9-]{4,30}$/.test(values.operation))
+    fieldErrors.operation = "Número de operación no válido: usa solo letras y números (4 a 30).";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(values.paid_on)) fieldErrors.paid_on = "Indica la fecha del pago.";
   const amount = parseDecimal(values.amount, 2, 6);
   if (amount === null || amount < BILLING.priceSoles) fieldErrors.amount = `El monto mínimo es ${BILLING.priceLabel}.`;
@@ -181,5 +186,5 @@ export async function reportManualPayment(_: ReportState, formData: FormData): P
 
   revalidatePath("/billing");
   revalidatePath("/dashboard", "layout");
-  return { saved: true };
+  return { saved: true, savedInfo: { method: values.method, operation: values.operation, amount: amount!.toFixed(2) } };
 }

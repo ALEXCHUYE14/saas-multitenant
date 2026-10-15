@@ -33,7 +33,7 @@ export function TablesBoard({ tables, loose }: { tables: TableCard[]; loose: Loo
           {tables.map((t) => (
             <li key={t.id}>
               {t.order ? (
-                <Link
+                <Link prefetch={false}
                   href={href(`/tables/${t.order.id}`)}
                   className="flex h-28 flex-col justify-between rounded-panel border border-accent bg-accent-soft p-3 hover:brightness-105"
                 >
@@ -83,7 +83,7 @@ export function TablesBoard({ tables, loose }: { tables: TableCard[]; loose: Loo
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {loose.map((o) => (
               <li key={o.id}>
-                <Link
+                <Link prefetch={false}
                   href={href(`/tables/${o.id}`)}
                   className="flex h-24 flex-col justify-between rounded-panel border border-accent bg-accent-soft p-3 hover:brightness-105"
                 >

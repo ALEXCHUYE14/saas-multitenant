@@ -36,7 +36,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
         <Field label="Correo" name="email" type="email" inputMode="email" defaultValue={value("email")} error={state.fieldErrors?.email} className="sm:col-span-2" />
       </div>
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Link
+        <Link prefetch={false}
           href={href("/customers")}
           className="inline-flex h-10 items-center justify-center rounded-control px-4 text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
         >

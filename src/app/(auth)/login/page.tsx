@@ -21,14 +21,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <LoginForm next={next} />
 
       <p className="mt-4 text-sm">
-        <Link href="/forgot-password" className="text-ink-2 hover:text-ink">
+        <Link prefetch={false} href="/forgot-password" className="text-ink-2 hover:text-ink">
           ¿Olvidaste tu contraseña?
         </Link>
       </p>
 
       <p className="mt-8 text-sm text-ink-2">
         ¿Aún no tienes cuenta?{" "}
-        <Link href="/register" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
+        <Link prefetch={false} href="/register" className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4">
           Registra tu negocio
         </Link>
       </p>

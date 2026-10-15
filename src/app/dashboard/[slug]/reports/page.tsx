@@ -93,7 +93,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <nav aria-label="Periodo" className="flex flex-wrap gap-1 rounded-control bg-surface-2 p-0.5 text-sm">
           {(Object.keys(RANGE_PRESETS) as RangePreset[]).map((k) => (
-            <Link
+            <Link prefetch={false}
               key={k}
               href={`${base}?range=${k}`}
               aria-current={range.preset === k ? "page" : undefined}
@@ -219,7 +219,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   return (
                     <tr key={t.product_id}>
                       <td className="py-2.5 pr-3">
-                        <Link href={`/dashboard/${slug}/products/${t.product_id}`} className="font-medium hover:underline">
+                        <Link prefetch={false} href={`/dashboard/${slug}/products/${t.product_id}`} className="font-medium hover:underline">
                           {t.product_name}
                         </Link>
                         <div className="mt-1 h-1.5 rounded-full bg-surface-2" aria-hidden>

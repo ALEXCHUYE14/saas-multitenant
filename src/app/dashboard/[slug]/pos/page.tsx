@@ -32,7 +32,7 @@ export default async function PosPage({ params }: { params: Promise<{ slug: stri
         title="Vender"
         actions={
           session && (
-            <Link
+            <Link prefetch={false}
               href={`/dashboard/${slug}/cash`}
               className="inline-flex h-10 items-center rounded-control border border-line px-4 text-sm text-ink-2 hover:text-ink"
             >

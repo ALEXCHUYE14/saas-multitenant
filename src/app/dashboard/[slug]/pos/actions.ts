@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { assertPermission } from "@/lib/tenant";
@@ -80,7 +79,9 @@ export async function createSale(slug: string, input: SaleInput): Promise<SaleRe
     return { ok: false, error: (error && SALE_ERRORS[error.message]) ?? "No se pudo registrar la venta. Inténtalo de nuevo." };
   }
 
-  revalidatePath(`/dashboard/${slug}`, "layout");
+  // Sin revalidatePath: recargaría el catálogo entero (hasta 2000 productos) tras
+  // cada venta. Vender ajusta el stock en pantalla; las demás páginas son
+  // dinámicas y se cargan frescas al abrirlas.
   return { ok: true, sale: { id: data.id, number: data.number, total: data.total, change: data.change_given } };
 }
 

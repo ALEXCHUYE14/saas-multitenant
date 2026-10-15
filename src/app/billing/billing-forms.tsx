@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
-import { Check, Copy } from "lucide-react";
+import { startTransition, useActionState, useState, useTransition } from "react";
+import { Check, Copy, MessageCircle } from "lucide-react";
 import {
   cancelCardSubscription,
   reportManualPayment,
@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { SelectField } from "@/components/ui/select-field";
 import { FormAlert } from "@/components/ui/form-alert";
-import { BILLING } from "@/lib/billing";
+import { BILLING, whatsappLink } from "@/lib/billing";
+import { compressImage } from "@/lib/compress-image";
 
 /** Dato con botón de copiar (número de cuenta, CCI, celular). */
 export function CopyField({ label, value }: { label: string; value: string }) {
@@ -90,18 +91,49 @@ export function CancelCardButton() {
   );
 }
 
-export function ReportPaymentForm({ methods, today }: { methods: { value: string; label: string }[]; today: string }) {
+const METHOD_NAME: Record<string, string> = { yape: "Yape", plin: "Plin", transfer: "transferencia" };
+
+export function ReportPaymentForm({
+  methods,
+  today,
+  orgName,
+}: {
+  methods: { value: string; label: string }[];
+  today: string;
+  orgName: string;
+}) {
   const [state, action, pending] = useActionState<ReportState, FormData>(reportManualPayment, {});
+  const [compressing, startCompress] = useTransition();
+  const busy = pending || compressing;
   const v = state.values;
 
+  // Comprime la foto del comprobante antes de enviarla (menos almacenamiento y egress).
+  const submit = (fd: FormData) => {
+    const file = fd.get("receipt");
+    if (!(file instanceof File) || file.size === 0 || !file.type.startsWith("image/")) return action(fd);
+    startCompress(async () => {
+      const small = await compressImage(file);
+      fd.set("receipt", small, small.name);
+      // Tras un await se pierde el contexto de la transición: se vuelve a envolver.
+      startTransition(() => action(fd));
+    });
+  };
+
   if (state.saved) {
+    const info = state.savedInfo;
+    const message = info
+      ? `Hola, soy de ${orgName}. Pagué S/ ${info.amount} por ${METHOD_NAME[info.method] ?? info.method} (operación ${info.operation}). Te envío el comprobante.`
+      : `Hola, soy de ${orgName}. Te envío el comprobante de mi pago.`;
     return (
-      <FormAlert notice="¡Gracias! Registramos tu pago. Ya tienes acceso mientras lo confirmamos (normalmente el mismo día)." />
+      <div className="grid gap-3">
+        <FormAlert notice="¡Gracias! Registramos tu pago. Ya tienes acceso mientras lo confirmamos (normalmente el mismo día)." />
+        <WhatsAppButton message={message} label="Enviar comprobante por WhatsApp" />
+      </div>
     );
   }
 
   return (
-    <form key={JSON.stringify(v ?? null)} action={action} className="grid gap-4 sm:grid-cols-2" noValidate>
+    <form key={JSON.stringify(v ?? null)} action={submit} className="grid gap-4 sm:grid-cols-2" noValidate>
       <FormAlert error={state.error} />
       <SelectField
         label="¿Cómo pagaste?"
@@ -154,9 +186,24 @@ export function ReportPaymentForm({ methods, today }: { methods: { value: string
           {state.fieldErrors?.receipt ?? "Máximo 5 MB. Acelera la confirmación."}
         </p>
       </div>
-      <Button type="submit" size="lg" loading={pending} className="w-full sm:col-span-2">
+      <Button type="submit" size="lg" loading={busy} className="w-full sm:col-span-2">
         Reportar pago
       </Button>
     </form>
+  );
+}
+
+/** Botón de WhatsApp con mensaje prellenado (abre la app en el celular). */
+export function WhatsAppButton({ message, label }: { message: string; label: string }) {
+  return (
+    <a
+      href={whatsappLink(message)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-control bg-[#25D366] px-4 text-sm font-medium text-[#062b14] hover:brightness-105 sm:w-auto"
+    >
+      <MessageCircle className="size-4" />
+      {label}
+    </a>
   );
 }

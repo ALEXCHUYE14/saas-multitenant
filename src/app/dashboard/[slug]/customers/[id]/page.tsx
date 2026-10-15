@@ -74,7 +74,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      <Link href={`/dashboard/${slug}/customers`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
+      <Link prefetch={false} href={`/dashboard/${slug}/customers`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
         <ArrowLeft className="size-4" />
         Clientes
       </Link>
@@ -108,7 +108,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ slug:
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">
                       {e.kind === "sale" ? (
-                        <Link href={`/dashboard/${slug}/sales/${e.id}`} className="hover:underline">
+                        <Link prefetch={false} href={`/dashboard/${slug}/sales/${e.id}`} className="hover:underline">
                           {e.label}
                         </Link>
                       ) : (

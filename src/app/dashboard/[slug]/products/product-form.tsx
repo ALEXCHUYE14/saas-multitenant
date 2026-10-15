@@ -132,7 +132,7 @@ function ProductFormFields({
                   <p className="flex h-11 items-center text-sm">
                     <span className="tabular font-medium">{formatQty(product.stock, product.unit)}</span>
                     {product.track_stock && (
-                      <Link href={href(`/products/${product.id}`)} className="ml-3 text-ink-2 underline underline-offset-4 hover:text-ink">
+                      <Link prefetch={false} href={href(`/products/${product.id}`)} className="ml-3 text-ink-2 underline underline-offset-4 hover:text-ink">
                         Registrar movimiento
                       </Link>
                     )}
@@ -163,7 +163,7 @@ function ProductFormFields({
       )}
 
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Link
+        <Link prefetch={false}
           href={href("/products")}
           className="inline-flex h-10 items-center justify-center rounded-control px-4 text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
         >

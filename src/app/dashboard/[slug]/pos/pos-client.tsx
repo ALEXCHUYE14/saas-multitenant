@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Minus, Plus, Trash2, X } from "lucide-react";
 import { createSale, type SaleResult } from "./actions";
 import { useTenant } from "@/hooks/use-tenant";
@@ -31,6 +31,22 @@ export function PosClient({
   const [cart, setCart] = useState<CartLine[]>([]);
   const [done, setDone] = useState<Extract<SaleResult, { ok: true }>["sale"] | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Stock vendido en esta pantalla desde la última carga del servidor. Evita volver a
+  // descargar todo el catálogo tras cada venta (la BD ya descontó el stock real).
+  const [sold, setSold] = useState<Map<string, number>>(() => new Map());
+  // Si llegan productos frescos del servidor, ya incluyen esas ventas: se reinicia.
+  useEffect(() => setSold(new Map()), [products]);
+  const shownProducts = useMemo(
+    () =>
+      sold.size === 0
+        ? products
+        : products.map((p) => {
+            const q = sold.get(p.id);
+            return q && p.track_stock ? { ...p, stock: Number((p.stock - q).toFixed(3)) } : p;
+          }),
+    [products, sold],
+  );
 
   // --- Carrito ---------------------------------------------------------------
   const add = (product: PosProduct) => {
@@ -75,6 +91,11 @@ export function PosClient({
       customer_id: p.customerId,
     });
     if (!res.ok) return res;
+    setSold((prev) => {
+      const next = new Map(prev);
+      for (const l of lines) next.set(l.product.id, (next.get(l.product.id) ?? 0) + l.qtyValue!);
+      return next;
+    });
     setDone(res.sale);
     setCart([]);
     searchRef.current?.focus();
@@ -83,7 +104,7 @@ export function PosClient({
 
   return (
     <div className="grid gap-6 pb-24 md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start md:pb-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-      <ProductGrid ref={searchRef} products={products} onPick={add} autoFocus />
+      <ProductGrid ref={searchRef} products={shownProducts} onPick={add} autoFocus />
 
       {/* Ticket */}
       <section id="ticket" aria-label="Venta actual" className="scroll-mt-20 rounded-panel border border-line bg-surface md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto lg:top-6 lg:max-h-[calc(100dvh-3rem)]">
@@ -113,7 +134,7 @@ export function PosClient({
                 >
                   Imprimir ticket
                 </a>
-                <Link href={href(`/sales/${done.id}`)} className="text-ink-2 underline underline-offset-4">
+                <Link prefetch={false} href={href(`/sales/${done.id}`)} className="text-ink-2 underline underline-offset-4">
                   Ver detalle
                 </Link>
               </p>

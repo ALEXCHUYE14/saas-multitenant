@@ -8,7 +8,8 @@ import { can } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
-import { OrderClient, type OrderLine } from "./order-client";
+import { OrderClient } from "./order-client";
+import { loadOrderLines } from "../order-lines";
 
 export const metadata: Metadata = { title: "Pedido" };
 
@@ -28,7 +29,7 @@ export default async function OrderPage({ params }: { params: Promise<{ slug: st
 
   const title = order.table?.name ?? order.label ?? "Pedido";
   const back = (
-    <Link href={`/dashboard/${slug}/tables`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
+    <Link prefetch={false} href={`/dashboard/${slug}/tables`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
       <ArrowLeft className="size-4" />
       Mesas
     </Link>
@@ -59,7 +60,7 @@ export default async function OrderPage({ params }: { params: Promise<{ slug: st
               >
                 Imprimir ticket
               </a>
-              <Link href={`/dashboard/${slug}/tables`} className="inline-flex h-10 items-center rounded-control border border-line px-4">
+              <Link prefetch={false} href={`/dashboard/${slug}/tables`} className="inline-flex h-10 items-center rounded-control border border-line px-4">
                 Volver a mesas
               </Link>
             </div>
@@ -73,12 +74,8 @@ export default async function OrderPage({ params }: { params: Promise<{ slug: st
     );
   }
 
-  const [items, products, tables, openOrders] = await Promise.all([
-    supabase
-      .from("order_items")
-      .select("id, product_id, quantity, note, product:products(name, unit, price, active)")
-      .eq("order_id", orderId)
-      .order("created_at"),
+  const [lines, products, tables, openOrders] = await Promise.all([
+    loadOrderLines(supabase, orderId),
     supabase
       .from("products")
       .select("id, name, code, category, unit, price, track_stock, stock, low_stock")
@@ -88,19 +85,7 @@ export default async function OrderPage({ params }: { params: Promise<{ slug: st
     supabase.from("dining_tables").select("id, name").eq("active", true).order("sort_order").order("name"),
     supabase.from("orders").select("table_id").eq("status", "open").not("table_id", "is", null),
   ]);
-  if (items.error) throw new Error(items.error.message);
   if (products.error) throw new Error(products.error.message);
-
-  const lines: OrderLine[] = (items.data ?? []).map((it) => ({
-    id: it.id,
-    productId: it.product_id,
-    name: it.product?.name ?? "Producto",
-    unit: it.product?.unit ?? "unit",
-    price: it.product?.price ?? 0,
-    quantity: it.quantity,
-    note: it.note,
-    available: Boolean(it.product?.active),
-  }));
 
   const busy = new Set((openOrders.data ?? []).map((o) => o.table_id));
   const freeTables = (tables.data ?? []).filter((t) => !busy.has(t.id));

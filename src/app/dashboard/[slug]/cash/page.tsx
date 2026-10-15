@@ -98,7 +98,7 @@ async function OpenSession({ slug, session, openedBy }: { slug: string; session:
           <p className="mt-1 text-sm text-ink-2">
             Abierta {dateFmt.format(new Date(session.opened_at))}
             {openedBy ? ` por ${openedBy}` : ""}.{" "}
-            <Link href={`/dashboard/${slug}/sales?session=${session.id}`} className="underline underline-offset-4 hover:text-ink">
+            <Link prefetch={false} href={`/dashboard/${slug}/sales?session=${session.id}`} className="underline underline-offset-4 hover:text-ink">
               Ver ventas del turno
             </Link>
           </p>

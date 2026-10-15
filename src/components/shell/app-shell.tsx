@@ -124,7 +124,7 @@ function BillingBanner() {
     <div role="status" className="border-b border-warn/30 bg-warn/10">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5 text-sm sm:px-6 lg:px-10">
         <span>{msg}</span>
-        <Link href="/billing" className="font-medium underline decoration-2 underline-offset-4">
+        <Link prefetch={false} href="/billing" className="font-medium underline decoration-2 underline-offset-4">
           Ver suscripción
         </Link>
       </div>
@@ -156,7 +156,7 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
           const active = item.path === "" ? pathname === base : pathname.startsWith(to);
           return (
             <li key={item.path}>
-              <Link
+              <Link prefetch={false}
                 href={to}
                 aria-current={active ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
@@ -200,7 +200,7 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
         >
           <PanelLeftOpen className="size-4" />
         </button>
-        <Link
+        <Link prefetch={false}
           href={href("/profile")}
           className="mt-1 grid size-8 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent hover:brightness-105"
           title="Mi perfil"
@@ -217,7 +217,7 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
       <ThemeToggle />
       {/* Fila del usuario: avatar + nombre (a Mi perfil) y salir, centrados en una misma altura. */}
       <div className="flex h-12 items-center gap-2">
-        <Link
+        <Link prefetch={false}
           href={href("/profile")}
           title={`${fullName ?? email ?? ""} · Mi perfil`}
           className="flex h-full min-w-0 flex-1 items-center gap-3 rounded-control px-2 hover:bg-surface-2"
