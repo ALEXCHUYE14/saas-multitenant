@@ -44,7 +44,7 @@ export function TicketToolbar({ backHref, autoPrint }: { backHref: string; autoP
           html, body { background: #fff !important; }
         }
       `}</style>
-      <div className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-panel bg-white p-2 text-sm text-black shadow print:hidden">
+      <div className="mx-auto mb-4 flex w-fit max-w-[calc(100%-1rem)] flex-wrap items-center justify-center gap-2 rounded-panel bg-white p-2 text-sm text-black shadow print:hidden">
         <Link href={backHref} className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 hover:bg-neutral-100">
           <ArrowLeft className="size-4" />
           Volver

@@ -26,6 +26,24 @@ En Supabase → Authentication → URL Configuration agrega `http://localhost:30
 | 6 | `20261017000100_credit.sql` | Fiados 2/2: abonos, saldos y costo por venta |
 | 7 | `20261018000000_tables_orders.sql` | Mesas y pedidos |
 | 8 | `20261019000000_reports.sql` | Reportes |
+| 9 | `20261020000000_billing.sql` | Suscripción S/ 35/mes, prueba de 14 días, panel de administración |
+
+### Cobro de la suscripción
+
+**Acceso de cada negocio** = el mayor de: fin de la prueba (14 días), `paid_until` + 3 días de gracia, o acceso provisional (3 días al reportar un pago). Se aplica en `private.current_org_id()`: un negocio vencido no puede leer ni escribir nada y se le envía a `/billing`.
+
+1. **Hazte administrador** (SQL Editor, una vez):
+   ```sql
+   insert into private.platform_admins (user_id)
+   select id from auth.users where email = 'TU-CORREO';
+   ```
+   Tu panel queda en `/admin`: negocios, ingreso estimado, aprobar o rechazar pagos.
+2. **Tarjeta (automático)** con Mercado Pago Suscripciones:
+   - Copia en `.env.local` (y en Vercel): `SUPABASE_SERVICE_ROLE_KEY`, `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET`.
+   - En Mercado Pago → Webhooks: URL `https://TU-DOMINIO/api/webhooks/mercadopago`, eventos **Planes y suscripciones** y **Pagos**.
+   - Mercado Pago necesita una URL pública con HTTPS: en `localhost` no llegan los avisos. Prueba con las credenciales de prueba ya desplegado (o con un túnel tipo ngrok).
+3. **Yape / Plin / transferencia** (Interbank): el cliente reporta el pago en `/billing` y tú lo apruebas en `/admin` tras verlo en tu banca. Los números de Yape/Plin se configuran con `NEXT_PUBLIC_BILLING_YAPE_NUMBER` / `NEXT_PUBLIC_BILLING_PLIN_NUMBER`; los datos bancarios, en `src/lib/billing.ts`.
+4. El precio está en dos lugares que deben coincidir: `src/lib/billing.ts` y `private.billing_price()` en la BD.
 
 ## Arquitectura
 

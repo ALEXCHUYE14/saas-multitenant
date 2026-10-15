@@ -16,7 +16,7 @@ export type TenantContext = {
 type Membership =
   | { status: "unauthenticated" }
   | { status: "no-organization"; userId: string }
-  | { status: "inactive"; userId: string } // org suspendida/cancelada (RLS la oculta)
+  | { status: "inactive"; userId: string } // org vencida, suspendida o cancelada (RLS la oculta)
   | { status: "member"; ctx: TenantContext };
 
 /**
@@ -55,7 +55,7 @@ export const getMembership = cache(async (): Promise<Membership> => {
  * Helper principal para rutas /dashboard/[slug]/...
  * - Sin sesión            → /login
  * - Sin organización      → /onboarding
- * - Org inactiva          → /suspended
+ * - Org vencida/suspendida → /billing (pagar o ver el motivo)
  * - Slug de OTRO tenant   → 404 (no revela si el slug existe)
  * - Permiso insuficiente  → 404 o redirect según `onForbidden`
  */
@@ -71,7 +71,7 @@ export async function getTenantContext(
     case "no-organization":
       redirect("/onboarding");
     case "inactive":
-      redirect("/suspended");
+      redirect("/billing");
   }
 
   const ctx = m.ctx;

@@ -92,7 +92,7 @@ export default async function ProductsPage({ params, searchParams }: { params: P
     <div className="flex justify-end gap-1">
       <Link
         href={qs({ edit: r.id, page: page > 1 ? String(page) : undefined })}
-        className="grid size-8 place-items-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
+        className="grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
         aria-label={`Editar ${r.name}`}
       >
         <Pencil className="size-4" />
@@ -132,14 +132,14 @@ export default async function ProductsPage({ params, searchParams }: { params: P
       )}
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <nav aria-label="Filtro" className="flex gap-1 rounded-control bg-surface-2 p-0.5 text-sm">
+        <nav aria-label="Filtro" className="flex max-w-full gap-1 self-start overflow-x-auto rounded-control bg-surface-2 p-0.5 text-sm">
           {(Object.keys(VIEWS) as View[]).map((v) => (
             <Link
               key={v}
               href={qs({ view: v === "active" ? "" : v })}
               aria-current={view === v ? "page" : undefined}
               className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-[0.375rem] px-3 text-ink-2 hover:text-ink",
+                "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[0.375rem] px-3 whitespace-nowrap text-ink-2 hover:text-ink",
                 view === v && "bg-surface font-medium text-ink shadow-[0_0_0_1px_var(--line)]",
               )}
             >

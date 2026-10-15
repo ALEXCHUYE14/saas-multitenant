@@ -24,17 +24,20 @@ export function MetricStrip({ metrics }: { metrics: Metric[] }) {
         <div
           key={m.label}
           className={cn(
-            "relative flex flex-col gap-1 p-4 sm:p-5",
+            "relative flex min-w-0 flex-col gap-1 p-4 sm:p-5",
             // divisores internos: verticales en fila, horizontales al apilar
             i % 2 === 1 && "border-l border-line",
             i >= 2 && "border-t border-line lg:border-t-0",
             i > 0 && "lg:border-l",
+            // cantidad impar: la última ocupa la fila entera en móvil (sin hueco vacío)
+            metrics.length % 2 === 1 && i === metrics.length - 1 && "col-span-2 lg:col-span-1",
           )}
         >
           <span className="text-sm text-ink-2">{m.label}</span>
           <span
             className={cn(
-              "tabular text-2xl font-semibold tracking-tight sm:text-figure",
+              // xl en móvil: "S/ 12,345.50" cabe en media pantalla de 320px; nunca se corta.
+              "tabular text-xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-2xl xl:text-figure",
               m.primary && "text-accent",
             )}
           >

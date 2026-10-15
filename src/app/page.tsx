@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Beef, Car, ShieldCheck, ShoppingBasket, Smartphone, Users, UtensilsCrossed } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/logo";
+import { BILLING } from "@/lib/billing";
 
 export const metadata: Metadata = {
   title: { absolute: "Panel · Sistema para restaurantes, bodegas, carwash y carnicerías" },
@@ -87,7 +88,11 @@ export default async function Home() {
                 </Link>
               )}
             </div>
-            {!loggedIn && <p className="mt-4 text-sm text-ink-3">Registro en un minuto. No pedimos tarjeta.</p>}
+            {!loggedIn && (
+              <p className="mt-4 text-sm text-ink-3">
+                {BILLING.trialDays} días gratis, sin tarjeta. Luego {BILLING.priceLabel} al mes.
+              </p>
+            )}
           </div>
 
           <Ticket />
@@ -123,6 +128,36 @@ export default async function Home() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* Precio */}
+        <section className="border-t border-line bg-surface">
+          <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">Un solo precio, todo incluido</h2>
+              <p className="mt-2 text-ink-2">
+                Ventas, caja, inventario, fiados, mesas, reportes y usuarios ilimitados. Sin contratos: cancela cuando quieras.
+              </p>
+            </div>
+            <div className="rounded-panel border border-line bg-bg p-6">
+              <p className="flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tabular">{BILLING.priceLabel}</span>
+                <span className="text-ink-2">al mes por negocio</span>
+              </p>
+              <ul className="mt-4 grid gap-1.5 text-sm text-ink-2">
+                <li>✓ {BILLING.trialDays} días gratis, sin tarjeta</li>
+                <li>✓ Paga con tarjeta, Yape, Plin o transferencia</li>
+                <li>✓ Tus datos se guardan aunque pauses</li>
+              </ul>
+              <Link
+                href={primary.href}
+                className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-control bg-accent px-5 font-medium text-accent-ink hover:brightness-105"
+              >
+                {loggedIn ? "Ir a mi panel" : `Probar ${BILLING.trialDays} días gratis`}
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* Cierre */}

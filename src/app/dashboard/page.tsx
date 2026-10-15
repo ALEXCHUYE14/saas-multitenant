@@ -6,6 +6,6 @@ export default async function DashboardIndex() {
   const m = await getMembership();
   if (m.status === "unauthenticated") redirect("/login");
   if (m.status === "no-organization") redirect("/onboarding");
-  if (m.status === "inactive") redirect("/suspended");
+  if (m.status === "inactive") redirect("/billing");
   redirect(`/dashboard/${m.ctx.organization.slug}`);
 }

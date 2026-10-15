@@ -1,9 +1,10 @@
-import { LayoutGrid, Armchair, ChartColumn, Package, Receipt, Settings, ShoppingCart, UserRound, Users, Wallet, type LucideIcon } from "lucide-react";
+import { LayoutGrid, Armchair, ChartColumn, CreditCard, Package, Receipt, Settings, ShoppingCart, UserRound, Users, Wallet, type LucideIcon } from "lucide-react";
 import type { Permission } from "@/lib/permissions";
 
 export type NavItem = {
   label: string;
-  path: string; // relativo a /dashboard/[slug]
+  path: string; // relativo a /dashboard/[slug], salvo que absolute = true
+  absolute?: boolean;
   icon: LucideIcon;
   permission?: Permission;
 };
@@ -20,4 +21,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Productos", path: "/products", icon: Package, permission: "products:read" },
   { label: "Equipo", path: "/team", icon: Users, permission: "members:read" },
   { label: "Ajustes", path: "/settings", icon: Settings, permission: "org:update" },
+  { label: "Suscripción", path: "/billing", icon: CreditCard, permission: "org:billing", absolute: true },
 ];

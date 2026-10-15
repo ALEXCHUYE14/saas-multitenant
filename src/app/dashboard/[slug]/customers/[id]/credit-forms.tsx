@@ -74,7 +74,7 @@ export function VoidPaymentButton({ paymentId, amount }: { paymentId: string; am
           if (res.error) alert(res.error);
         });
       }}
-      className="grid size-8 place-items-center rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger disabled:opacity-40"
+      className="grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger disabled:opacity-40"
       aria-label="Anular abono"
       title="Anular abono"
     >

@@ -12,7 +12,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   const membership = await getMembership();
   if (membership.status === "unauthenticated") redirect("/login?next=/onboarding");
   if (membership.status === "member") redirect(`/dashboard/${membership.ctx.organization.slug}`);
-  if (membership.status === "inactive") redirect("/suspended");
+  if (membership.status === "inactive") redirect("/billing");
 
   const { invite } = await searchParams;
 

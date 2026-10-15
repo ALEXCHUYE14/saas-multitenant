@@ -4,7 +4,7 @@ import type { Database } from "./database.types";
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
 // /reset-password exige la sesión que crea el enlace de recuperación.
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/reset-password", "/print"];
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/reset-password", "/print", "/billing", "/admin"];
 
 /**
  * Refresca la sesión de Supabase en cada request y aplica las reglas de acceso:

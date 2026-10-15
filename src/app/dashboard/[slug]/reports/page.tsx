@@ -98,7 +98,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               href={`${base}?range=${k}`}
               aria-current={range.preset === k ? "page" : undefined}
               className={cn(
-                "inline-flex h-8 items-center rounded-[0.375rem] px-3 text-ink-2 hover:text-ink",
+                "inline-flex h-8 shrink-0 items-center rounded-[0.375rem] px-3 whitespace-nowrap text-ink-2 hover:text-ink",
                 range.preset === k && "bg-surface font-medium text-ink shadow-[0_0_0_1px_var(--line)]",
               )}
             >
@@ -107,15 +107,15 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           ))}
         </nav>
         <form className="flex flex-wrap items-end gap-2 text-sm">
-          <label className="grid gap-1">
+          <label className="grid min-w-0 flex-1 gap-1 sm:flex-none">
             <span className="text-xs text-ink-3">Desde</span>
-            <input type="date" name="from" defaultValue={range.fromDate} required className="h-9 rounded-control border border-line bg-surface px-2" />
+            <input type="date" name="from" defaultValue={range.fromDate} required className="h-10 w-full rounded-control border border-line bg-surface px-2 text-base sm:h-9 sm:text-sm" />
           </label>
-          <label className="grid gap-1">
+          <label className="grid min-w-0 flex-1 gap-1 sm:flex-none">
             <span className="text-xs text-ink-3">Hasta</span>
-            <input type="date" name="to" defaultValue={range.toDate} required className="h-9 rounded-control border border-line bg-surface px-2" />
+            <input type="date" name="to" defaultValue={range.toDate} required className="h-10 w-full rounded-control border border-line bg-surface px-2 text-base sm:h-9 sm:text-sm" />
           </label>
-          <button className="h-9 rounded-control border border-line px-3 text-ink-2 hover:text-ink">Ver</button>
+          <button className="h-10 rounded-control border border-line px-4 text-ink-2 hover:text-ink sm:h-9">Ver</button>
         </form>
       </div>
 

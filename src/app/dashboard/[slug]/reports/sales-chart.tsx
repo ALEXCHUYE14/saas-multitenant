@@ -15,6 +15,12 @@ export function SalesChart({ points }: { points: ChartPoint[] }) {
   const [active, setActive] = useState<number | null>(null);
   const max = Math.max(0, ...points.map((p) => p.cents));
   const maxIndex = points.findIndex((p) => p.cents === max && max > 0);
+  // Textos sobre una columna: centrados, pero anclados hacia adentro en los
+  // extremos para no salirse de la pantalla (evita scroll horizontal en móvil).
+  const anchor = (i: number) => {
+    const pos = points.length <= 1 ? 0.5 : i / (points.length - 1);
+    return pos < 0.25 ? "left-0" : pos > 0.75 ? "right-0" : "left-1/2 -translate-x-1/2";
+  };
   // Etiquetas del eje X selectivas: ~6 como máximo.
   const every = Math.max(1, Math.ceil(points.length / 6));
 
@@ -34,7 +40,7 @@ export function SalesChart({ points }: { points: ChartPoint[] }) {
             return (
               <div key={p.key} role="listitem" className="relative flex h-full min-w-0 flex-1 items-end justify-center">
                 {i === maxIndex && (
-                  <span className="pointer-events-none absolute top-0 left-1/2 z-10 -translate-x-1/2 -translate-y-full text-xs font-medium whitespace-nowrap text-ink tabular">
+                  <span className={`pointer-events-none absolute top-0 z-10 -translate-y-full text-xs font-medium whitespace-nowrap text-ink tabular ${anchor(i)}`}>
                     {formatCents(p.cents)}
                   </span>
                 )}
@@ -56,7 +62,7 @@ export function SalesChart({ points }: { points: ChartPoint[] }) {
                 {active === i && (
                   <div
                     role="tooltip"
-                    className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 rounded-control border border-line bg-surface px-2.5 py-1.5 text-xs whitespace-nowrap shadow-lg"
+                    className={`pointer-events-none absolute bottom-full z-20 mb-2 rounded-control border border-line bg-surface px-2.5 py-1.5 text-xs whitespace-nowrap shadow-lg ${anchor(i)}`}
                   >
                     <p className="font-medium text-ink">{p.longLabel}</p>
                     <p className="text-ink-2 tabular">

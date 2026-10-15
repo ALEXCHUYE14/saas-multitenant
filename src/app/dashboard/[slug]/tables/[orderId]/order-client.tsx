@@ -7,6 +7,7 @@ import { addOrderItem, cancelOrder, moveOrder, payOrder, setOrderItemQuantity } 
 import { useTenant } from "@/hooks/use-tenant";
 import { cn } from "@/lib/cn";
 import { ProductGrid, type PosProduct } from "@/components/pos/product-grid";
+import { MobileTotalBar } from "@/components/pos/mobile-total-bar";
 import { CheckoutPanel, type CheckoutPayment, type ChargeResult } from "@/components/pos/checkout-panel";
 import { FormAlert } from "@/components/ui/form-alert";
 import { formatCents, formatMoney, lineCents, unitDecimals } from "@/lib/format";
@@ -86,7 +87,7 @@ export function OrderClient({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
+    <div className="grid gap-6 pb-24 md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start md:pb-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="grid gap-3">
         <label className="flex items-center gap-2 text-sm">
           <span className="shrink-0 text-ink-2">Nota para el próximo producto:</span>
@@ -101,7 +102,7 @@ export function OrderClient({
         <ProductGrid products={products} onPick={pick} />
       </div>
 
-      <section aria-label="Pedido" className="rounded-panel border border-line bg-surface lg:sticky lg:top-6">
+      <section id="ticket" aria-label="Pedido" className="scroll-mt-20 rounded-panel border border-line bg-surface md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto lg:top-6 lg:max-h-[calc(100dvh-3rem)]">
         <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
           <h2 className="truncate font-semibold">{title}</h2>
           <a
@@ -139,7 +140,7 @@ export function OrderClient({
                   <div className="flex items-center gap-2">
                     {decimals === 0 ? (
                       <>
-                        <button type="button" onClick={() => decrement(l)} aria-label="Quitar uno" className="grid size-8 place-items-center rounded-control border border-line hover:bg-surface-2">
+                        <button type="button" onClick={() => decrement(l)} aria-label="Quitar uno" className="grid size-10 place-items-center sm:size-8 rounded-control border border-line hover:bg-surface-2">
                           <Minus className="size-3.5" />
                         </button>
                         <span className="w-8 text-center tabular text-sm">{l.quantity}</span>
@@ -148,7 +149,7 @@ export function OrderClient({
                           disabled={!l.available}
                           onClick={() => increment(l)}
                           aria-label="Agregar uno"
-                          className="grid size-8 place-items-center rounded-control border border-line hover:bg-surface-2 disabled:opacity-40"
+                          className="grid size-10 place-items-center sm:size-8 rounded-control border border-line hover:bg-surface-2 disabled:opacity-40"
                         >
                           <Plus className="size-3.5" />
                         </button>
@@ -161,7 +162,7 @@ export function OrderClient({
                       type="button"
                       onClick={() => setQty(l, "0")}
                       aria-label={`Quitar ${l.name}`}
-                      className="ml-auto grid size-8 place-items-center rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger"
+                      className="ml-auto grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger"
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -190,7 +191,7 @@ export function OrderClient({
               const v = e.target.value;
               if (v) run(() => moveOrder(organization.slug, orderId, v === "__none" ? null : v));
             }}
-            className="h-9 rounded-control border border-line bg-surface-2 px-2 text-ink-2"
+            className="h-10 max-w-full rounded-control border border-line bg-surface-2 px-2 text-base text-ink-2 sm:h-9 sm:text-sm"
           >
             <option value="">Cambiar de mesa…</option>
             {currentTableId && <option value="__none">Sin mesa (para llevar)</option>}
@@ -223,6 +224,8 @@ export function OrderClient({
           </div>
         </div>
       </section>
+
+      <MobileTotalBar count={lines.length} totalCents={subtotal} targetId="ticket" />
     </div>
   );
 }
@@ -242,7 +245,7 @@ function QtyEditor({ line, onSave }: { line: OrderLine; onSave: (v: string) => v
         onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), save())}
         inputMode="decimal"
         aria-label={`Cantidad de ${line.name}`}
-        className="h-8 w-20 rounded-control border border-line bg-surface-2 px-2 text-center text-base tabular outline-none focus:border-accent sm:text-sm"
+        className="h-10 w-20 rounded-control sm:h-8 border border-line bg-surface-2 px-2 text-center text-base tabular outline-none focus:border-accent sm:text-sm"
       />
       <span className="text-xs text-ink-3">{line.unit === "kg" ? "kg" : "L"}</span>
     </span>

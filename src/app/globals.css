@@ -89,6 +89,9 @@
     font-size: var(--text-base);
     line-height: 1.5;
     font-feature-settings: "ss01";
+    /* Red de seguridad móvil: sin scroll horizontal de página. `clip` (no
+       `hidden`) para no romper los elementos sticky del menú y del ticket. */
+    overflow-x: clip;
   }
   :focus-visible {
     outline: 2px solid var(--ring);

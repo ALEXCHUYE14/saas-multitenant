@@ -11,6 +11,7 @@ import { logout } from "@/app/(auth)/actions";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NAV_ITEMS } from "./nav";
+import { accessUntil, billingPhase, daysLeft } from "@/lib/billing";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
 
@@ -86,8 +87,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <main className="min-w-0 flex-1">
+        <BillingBanner />
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">{children}</div>
       </main>
+    </div>
+  );
+}
+
+/**
+ * Aviso de cobro para el propietario: prueba por terminar (≤ 5 días), periodo de
+ * gracia o acceso provisional. Se calcula tras montar (la hora del servidor y la
+ * del navegador difieren: evita desajustes de hidratación).
+ */
+function BillingBanner() {
+  const { organization, role } = useTenant();
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (role !== "owner") return setMsg(null);
+    const phase = billingPhase(organization);
+    const left = daysLeft(accessUntil(organization));
+    const days = `${left} ${left === 1 ? "día" : "días"}`;
+    setMsg(
+      phase === "trial" && left <= 5
+        ? `Tu prueba gratis termina en ${days}. Suscríbete para no perder el acceso.`
+        : phase === "grace"
+          ? `Tu pago está pendiente. Te quedan ${days} antes de que se pause el acceso.`
+          : phase === "provisional"
+            ? "Estamos confirmando tu pago. Mientras tanto tienes acceso completo."
+            : null,
+    );
+  }, [organization, role]);
+
+  if (!msg) return null;
+  return (
+    <div role="status" className="border-b border-warn/30 bg-warn/10">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5 text-sm sm:px-6 lg:px-10">
+        <span>{msg}</span>
+        <Link href="/billing" className="font-medium underline decoration-2 underline-offset-4">
+          Ver suscripción
+        </Link>
+      </div>
     </div>
   );
 }
@@ -112,7 +152,7 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
     <nav aria-label="Principal" className="flex-1 overflow-y-auto px-3 py-2">
       <ul className="grid gap-0.5">
         {NAV_ITEMS.filter((i) => !i.permission || can(i.permission)).map((item) => {
-          const to = href(item.path);
+          const to = item.absolute ? item.path : href(item.path);
           const active = item.path === "" ? pathname === base : pathname.startsWith(to);
           return (
             <li key={item.path}>
@@ -140,10 +180,11 @@ function SidebarNav({ collapsed }: { collapsed?: boolean }) {
 
 function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
   const { fullName, email, role, href } = useTenant();
-  const initials = (fullName ?? email ?? "?")
-    .split(/\s+/)
-    .map((w) => w[0])
-    .slice(0, 2)
+  // Nombre + primer apellido: con 4+ palabras se salta el segundo nombre
+  // ("Miguel Alexander Flores Chuye" → "MF"; "Juan Pérez García" → "JP").
+  const words = (fullName?.trim() || email || "?").split(/\s+/).filter(Boolean);
+  const initials = (words.length >= 4 ? [words[0], words[2]] : words.slice(0, 2))
+    .map((w) => w![0])
     .join("")
     .toUpperCase();
 
@@ -174,23 +215,24 @@ function SidebarFooter({ collapsed, onExpand }: { collapsed?: boolean; onExpand?
   return (
     <div className="grid gap-3 border-t border-line p-3">
       <ThemeToggle />
-      <div className="flex items-center gap-1">
+      {/* Fila del usuario: avatar + nombre (a Mi perfil) y salir, centrados en una misma altura. */}
+      <div className="flex h-12 items-center gap-2">
         <Link
           href={href("/profile")}
-          title="Mi perfil"
-          className="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-control p-1 hover:bg-surface-2"
+          title={`${fullName ?? email ?? ""} · Mi perfil`}
+          className="flex h-full min-w-0 flex-1 items-center gap-3 rounded-control px-2 hover:bg-surface-2"
         >
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
             {initials}
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm leading-tight font-medium">{fullName ?? email}</span>
-            <span className="block text-xs leading-tight text-ink-3">{ROLE_LABEL[role]}</span>
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+            <span className="truncate text-sm leading-tight font-medium">{fullName ?? email}</span>
+            <span className="truncate text-xs leading-tight text-ink-3">{ROLE_LABEL[role]}</span>
           </span>
         </Link>
-        <form action={logout}>
+        <form action={logout} className="flex shrink-0">
           <button
-            className="grid size-8 place-items-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
+            className="grid size-10 place-items-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink"
             aria-label="Cerrar sesión"
             title="Cerrar sesión"
           >

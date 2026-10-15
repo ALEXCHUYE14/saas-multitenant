@@ -5,7 +5,7 @@ import { Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { deleteProduct, setProductActive } from "./actions";
 
 const btn =
-  "grid size-8 place-items-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink disabled:opacity-40";
+  "grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink disabled:opacity-40";
 
 export function ProductRowActions({ slug, id, name, active }: { slug: string; id: string; name: string; active: boolean }) {
   const [pending, start] = useTransition();

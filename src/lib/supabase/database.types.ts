@@ -125,6 +125,41 @@ type OrganizationRow = {
   address: string | null;
   phone: string | null;
   ticket_footer: string | null;
+  trial_ends_at: string;
+  paid_until: string | null;
+  provisional_until: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingMethod = "card" | "yape" | "plin" | "transfer";
+export type BillingPaymentStatus = "pending" | "approved" | "rejected";
+
+type BillingPaymentRow = {
+  id: string;
+  organization_id: string;
+  method: BillingMethod;
+  amount: number;
+  months: number;
+  status: BillingPaymentStatus;
+  provider_payment_id: string | null;
+  operation_number: string | null;
+  paid_on: string | null;
+  receipt_path: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  reject_reason: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+type BillingSubscriptionRow = {
+  organization_id: string;
+  provider_subscription_id: string;
+  status: string;
+  payer_email: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -293,6 +328,18 @@ export type Database = {
           },
         ];
       };
+      billing_payments: {
+        Row: BillingPaymentRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      billing_subscriptions: {
+        Row: BillingSubscriptionRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       dining_tables: {
         Row: DiningTableRow;
         Insert: { name: string; sort_order?: number };
@@ -434,6 +481,80 @@ export type Database = {
         Args: { p_from: string; p_to: string };
         Returns: { sales_count: number; total: number }[];
       };
+      is_platform_admin: { Args: Record<string, never>; Returns: boolean };
+      my_billing: {
+        Args: Record<string, never>;
+        Returns: {
+          organization_id: string;
+          name: string;
+          slug: string;
+          status: OrgStatus;
+          trial_ends_at: string;
+          paid_until: string | null;
+          provisional_until: string | null;
+          access_until: string;
+          has_access: boolean;
+          is_owner: boolean;
+          subscription_status: string | null;
+          pending_payment: boolean;
+        }[];
+      };
+      report_manual_payment: {
+        Args: {
+          p_method: BillingMethod;
+          p_operation_number: string;
+          p_paid_on: string;
+          p_amount: number;
+          p_receipt_path?: string | null;
+        };
+        Returns: BillingPaymentRow;
+      };
+      billing_upsert_subscription: {
+        Args: { p_org: string; p_provider_id: string; p_status: string; p_payer_email?: string | null };
+        Returns: undefined;
+      };
+      billing_apply_card_payment: {
+        Args: { p_org: string; p_provider_payment_id: string; p_amount: number; p_paid_at: string | null };
+        Returns: boolean;
+      };
+      admin_review_payment: {
+        Args: { p_payment_id: string; p_approve: boolean; p_reason?: string | null };
+        Returns: BillingPaymentRow;
+      };
+      admin_organizations: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          name: string;
+          slug: string;
+          status: OrgStatus;
+          created_at: string;
+          trial_ends_at: string;
+          paid_until: string | null;
+          provisional_until: string | null;
+          access_until: string;
+          owner_email: string | null;
+          subscription_status: string | null;
+          pending_payments: number;
+        }[];
+      };
+      admin_pending_payments: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          organization_id: string;
+          organization_name: string;
+          method: BillingMethod;
+          amount: number;
+          months: number;
+          operation_number: string;
+          paid_on: string;
+          receipt_path: string | null;
+          created_at: string;
+        }[];
+      };
+      admin_set_org_status: { Args: { p_org: string; p_status: OrgStatus }; Returns: undefined };
+      admin_extend_trial: { Args: { p_org: string; p_days: number }; Returns: undefined };
       report_summary: {
         Args: { p_from: string; p_to: string };
         Returns: { sales_count: number; gross: number; discounts: number; net: number; credit_total: number; voided_count: number }[];
@@ -512,6 +633,8 @@ export type Database = {
       payment_method: PaymentMethod;
       sale_status: SaleStatus;
       order_status: OrderStatus;
+      billing_method: BillingMethod;
+      billing_payment_status: BillingPaymentStatus;
     };
     CompositeTypes: { [_ in never]: never };
   };
@@ -527,5 +650,6 @@ export type Sale = SaleRow;
 export type SaleItem = Database["public"]["Tables"]["sale_items"]["Row"];
 export type CustomerPayment = CustomerPaymentRow;
 export type DiningTable = DiningTableRow;
+export type BillingPayment = BillingPaymentRow;
 export type Order = OrderRow;
 export type OrderItem = OrderItemRow;

@@ -17,7 +17,7 @@ export function DeleteCustomerButton({ slug, id, name }: { slug: string; id: str
           if (res.error) alert(res.error);
         });
       }}
-      className="grid size-8 place-items-center rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger disabled:opacity-40"
+      className="grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger disabled:opacity-40"
       aria-label={`Eliminar a ${name}`}
     >
       <Trash2 className="size-4" />

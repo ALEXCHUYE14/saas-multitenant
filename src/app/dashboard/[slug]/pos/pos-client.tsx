@@ -7,6 +7,7 @@ import { createSale, type SaleResult } from "./actions";
 import { useTenant } from "@/hooks/use-tenant";
 import { cn } from "@/lib/cn";
 import { ProductGrid, type PosProduct } from "@/components/pos/product-grid";
+import { MobileTotalBar } from "@/components/pos/mobile-total-bar";
 import { CheckoutPanel, type CheckoutPayment, type ChargeResult } from "@/components/pos/checkout-panel";
 import { formatCents, formatMoney, lineCents, parseDecimal, unitDecimals } from "@/lib/format";
 
@@ -81,11 +82,11 @@ export function PosClient({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
+    <div className="grid gap-6 pb-24 md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start md:pb-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <ProductGrid ref={searchRef} products={products} onPick={add} autoFocus />
 
       {/* Ticket */}
-      <section aria-label="Venta actual" className="rounded-panel border border-line bg-surface lg:sticky lg:top-6">
+      <section id="ticket" aria-label="Venta actual" className="scroll-mt-20 rounded-panel border border-line bg-surface md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto lg:top-6 lg:max-h-[calc(100dvh-3rem)]">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <h2 className="font-semibold">Venta actual</h2>
           {cart.length > 0 && (
@@ -137,7 +138,7 @@ export function PosClient({
                   </div>
                   <div className="flex items-center gap-2">
                     {decimals === 0 && (
-                      <button type="button" onClick={() => step(l, -1)} aria-label="Quitar uno" className="grid size-8 place-items-center rounded-control border border-line hover:bg-surface-2">
+                      <button type="button" onClick={() => step(l, -1)} aria-label="Quitar uno" className="grid size-10 place-items-center sm:size-8 rounded-control border border-line hover:bg-surface-2">
                         <Minus className="size-3.5" />
                       </button>
                     )}
@@ -148,12 +149,12 @@ export function PosClient({
                       aria-label={`Cantidad de ${l.product.name}`}
                       aria-invalid={l.qtyValue === null || undefined}
                       className={cn(
-                        "h-8 w-20 rounded-control border bg-surface-2 px-2 text-center text-base tabular outline-none focus:border-accent sm:text-sm",
+                        "h-10 w-20 rounded-control sm:h-8 border bg-surface-2 px-2 text-center text-base tabular outline-none focus:border-accent sm:text-sm",
                         l.qtyValue === null ? "border-danger" : "border-line",
                       )}
                     />
                     {decimals === 0 && (
-                      <button type="button" onClick={() => step(l, 1)} aria-label="Agregar uno" className="grid size-8 place-items-center rounded-control border border-line hover:bg-surface-2">
+                      <button type="button" onClick={() => step(l, 1)} aria-label="Agregar uno" className="grid size-10 place-items-center sm:size-8 rounded-control border border-line hover:bg-surface-2">
                         <Plus className="size-3.5" />
                       </button>
                     )}
@@ -164,7 +165,7 @@ export function PosClient({
                       type="button"
                       onClick={() => remove(l.product.id)}
                       aria-label={`Quitar ${l.product.name}`}
-                      className="ml-auto grid size-8 place-items-center rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger"
+                      className="ml-auto grid size-10 place-items-center sm:size-8 rounded-control text-ink-3 hover:bg-danger/10 hover:text-danger"
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -184,6 +185,8 @@ export function PosClient({
           onCharge={charge}
         />
       </section>
+
+      <MobileTotalBar count={cart.length} totalCents={subtotal} targetId="ticket" />
     </div>
   );
 }
