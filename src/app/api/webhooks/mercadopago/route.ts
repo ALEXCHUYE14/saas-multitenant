@@ -6,6 +6,7 @@ import {
   getAuthorizedPayment,
   getPayment,
   getPreapproval,
+  MercadoPagoError,
   verifyWebhookSignature,
   type Payment,
 } from "@/lib/mercadopago";
@@ -70,6 +71,11 @@ export async function POST(request: NextRequest) {
         break;
     }
   } catch (err) {
+    // Recurso inexistente (p. ej. "Simular notificación" del panel de Mercado Pago, que
+    // usa ids ficticios): no es un error temporal, reintentar no sirve → 200.
+    if (err instanceof MercadoPagoError && err.status === 404) {
+      return NextResponse.json({ ignored: "recurso no encontrado en Mercado Pago" }, { status: 200 });
+    }
     console.error("[mercadopago webhook]", type, dataId, err);
     return NextResponse.json({ error: "error temporal" }, { status: 500 });
   }

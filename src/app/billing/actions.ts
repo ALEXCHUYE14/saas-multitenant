@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BILLING, normalizeOperation } from "@/lib/billing";
 import { parseDecimal } from "@/lib/format";
-import { cancelPreapproval, createPreapproval, mercadoPagoEnabled } from "@/lib/mercadopago";
+import { MercadoPagoError, cancelPreapproval, createPreapproval, mercadoPagoEnabled } from "@/lib/mercadopago";
 
 /** Negocio del usuario (aunque esté vencido), solo si es el propietario. */
 async function requireOwner() {
@@ -58,6 +58,12 @@ export async function startCardSubscription(_: CardState, formData: FormData): P
     }
   } catch (err) {
     console.error("[billing] createPreapproval", user.id, err);
+    if (err instanceof MercadoPagoError && err.status >= 400 && err.status < 500)
+      return {
+        email,
+        error:
+          "Mercado Pago rechazó la solicitud. Usa el correo con el que entras a Mercado Pago (distinto al del vendedor) e inténtalo de nuevo.",
+      };
     return { email, error: "Mercado Pago no respondió. Inténtalo de nuevo en unos minutos." };
   }
 
